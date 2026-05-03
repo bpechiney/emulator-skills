@@ -31,18 +31,13 @@ The reader sees the rule without hitting the network. Two years from now the URL
 | `pandocs/` | https://gbdev.io/pandocs/ — Game Boy Pandocs |
 | `nesdev/` | https://www.nesdev.org/wiki/ |
 | `fullsnes/` | https://problemkaputt.de/fullsnes.htm — SNES Hardware Reference |
-| `gbdev/` | https://gbdev.io/ — Game Boy development community broadly |
-| `gbdev-codenames/` | https://gbdev.io/pandocs/Specifications.html — for the DMG/MGB/SGB/SGB2/CGB/AGB canon |
-| `mooneye/` | https://github.com/Gekkio/mooneye-test-suite — Mooneye test ROM |
+| `mooneye/` | https://github.com/Gekkio/mooneye-test-suite |
 | `mealybug/` | https://github.com/mattcurrie/mealybug-tearoom-tests |
-| `blargg/` | https://github.com/retrio/gb-test-roms — Blargg suite |
-| `nestest/` | https://github.com/christopherpow/nes-test-roms |
-| `bsnes/` | bsnes / bsnes-plus source (architecture references, prior art) |
-| `ares/` | ares emulator source (architecture references) |
-| `sameboy/` | https://github.com/LIJI32/SameBoy — frequently the gold standard for GB |
-| `mesen2/` | https://github.com/SourMesen/Mesen2 — citation-style prior art |
-| `snes9x/` | Snes9x source (often cited as anti-pattern) |
-| `adr/` or `docs/adr/` | This repo's ADR directory |
+| `blargg/` | https://github.com/retrio/gb-test-roms |
+| `sameboy/` | https://github.com/LIJI32/SameBoy — gold-standard GB reference |
+| `docs/adr/` | This repo's ADR directory |
+
+Add prefixes for other reference emulators (`bsnes/`, `ares/`, `mesen2/`, `nesdev-test-roms/`, etc.) as you actually cite them — don't pre-stock the table speculatively.
 
 ## Stable anchors
 

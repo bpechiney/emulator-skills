@@ -24,7 +24,7 @@ pub fn build(b: *std.Build) void {
     });
 
     const core_lib = b.addLibrary(.{
-        .name = "fauxboy_core",
+        .name = "<emu>_core",
         .root_module = core_mod,
         .linkage = .static,
     });
@@ -40,7 +40,7 @@ pub fn build(b: *std.Build) void {
     // ... add raylib / SDL imports here ...
 
     const frontend_exe = b.addExecutable(.{
-        .name = "fauxboy",
+        .name = "<emu>",
         .root_module = frontend_mod,
     });
     b.installArtifact(frontend_exe);
@@ -115,17 +115,9 @@ The standard Zig modes (`Debug`, `ReleaseSafe`, `ReleaseFast`, `ReleaseSmall`) a
 
 Don't enable `ReleaseFast` by default for shipped builds; the slight perf gain rarely outweighs the safety loss.
 
-## Dev shell (chippy convention)
+## Pinning the Zig version
 
-Pin the Zig version with a Nix flake (chippy uses this; see `flake.nix`). All build invocations run inside the dev shell:
-
-```
-nix develop -c zig build
-nix develop -c zig build test
-nix develop -c zig fmt src/ build.zig
-```
-
-`just check` is a useful alias for `nix develop -c zig build test`. Pre-commit / CI runs the same command — no environmental drift.
+Pin the Zig version somehow (Nix flake, asdf, mise, manual instructions in README) so dev / pre-commit / CI all run the same compiler. The skill assumes Zig 0.16 — drift between local and CI is the most common source of "works on my machine" emulator-build issues. Chippy uses a Nix flake (`flake.nix`); pick whichever matches your toolchain habits.
 
 ## Submodule init for test ROMs
 

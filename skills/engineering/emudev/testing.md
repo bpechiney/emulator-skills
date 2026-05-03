@@ -6,32 +6,13 @@ Test discipline for cycle-accurate emulators. Drives what `/tdd` consumes; encod
 
 ## The test-ROM tier
 
-Test ROMs are the gold standard for emulator correctness. Each suite has a deterministic pass/fail signal — the test ROM either prints "Passed" / "Failed" to a serial port, leaves a magic value in a register, or produces a known framebuffer hash.
+Test ROMs are the gold standard for emulator correctness. Each suite has a deterministic pass/fail signal of one of three shapes:
 
-Wire each suite as a `zig build` step (see [build.md](./build.md)). Use `--test-timeout` so a hang is a failure, not a wedged CI run.
+- **Serial-port output** — the ROM prints `Passed` / `Failed` to a fake serial device; the harness scans the captured bytes after a cycle budget.
+- **Register magic-pattern** — at completion, the CPU registers hold a sentinel value (e.g. a Fibonacci sequence); the harness asserts on register state.
+- **Framebuffer hash** — the harness captures the framebuffer at a specified cycle count and compares against a vendored expected hash.
 
-### Game Boy test-ROM catalog (wiring focus)
-
-System-specific catalogs in `references/<system>/test-rom-catalog.md` — those files describe *where each suite lives*, *how to extract the pass/fail signal*, and *the known minimum-passing baseline for chippy / faux-boy / etc*. The catalog is about wiring, not enumeration.
-
-### Vendoring
-
-Vendor test ROMs as **git submodules** under the `test_rom_root` declared in `docs/agents/emudev.md` (default `tests/test-roms/`). Submodules pin to specific upstream commits — you control when test-ROM expectations change.
-
-Don't vendor as tarballs. Don't copy ROM binaries into your repo's tree. The submodule pattern keeps licensing clean (most test ROMs are permissively licensed but require attribution; the submodule preserves the upstream repo's LICENSE).
-
-### Pass/fail signal extraction
-
-For ROMs that print to the Game Boy serial port (Blargg, Mooneye), the harness should:
-
-1. Run the ROM with a serial device that buffers output.
-2. Set a per-suite max-cycles budget.
-3. After the budget, scan the serial buffer for the suite's "Passed" / "Failed" sentinel.
-4. Exit non-zero on "Failed" or on timeout-without-sentinel.
-
-For framebuffer-hash ROMs (mealybug-tearoom, dmg-acid2), capture the framebuffer at the suite's specified cycle count and compare against a vendored expected-hash file.
-
-For Tom Harte JSON tests (per-opcode pre/post state), the harness loads each test-case JSON, sets up CPU state, runs one instruction, and asserts post-state matches.
+Per-system suite-to-shape mappings, vendoring details, and signal-extraction conventions live in `references/<system>/test-rom-catalog.md`. Wiring lives in [build.md](./build.md). Use a per-suite cycle timeout so a hang is a failure, not a wedged CI run.
 
 ## Determinism — non-negotiable
 
@@ -40,12 +21,12 @@ Re-running the same ROM with the same input and the same starting state must pro
 Concrete rule: the test harness runs each ROM twice, captures the full console state at frame 60, and asserts byte-for-byte equality. This test exists in every emudev repo from M0.
 
 ```zig
-test "determinism: pokemon-red boot" {
-    var c1 = try Console.init(rom_pokemon_red);
+test "determinism: <rom> boot" {
+    var c1 = try Console.init(rom);
     defer c1.deinit();
     for (0..60) |_| c1.runFrame();
 
-    var c2 = try Console.init(rom_pokemon_red);
+    var c2 = try Console.init(rom);
     defer c2.deinit();
     for (0..60) |_| c2.runFrame();
 
@@ -66,7 +47,7 @@ Save-state-and-restore must be **bit-identical**. This test also exists in every
 
 ```zig
 test "save-state round trip: arbitrary mid-frame" {
-    var c1 = try Console.init(rom_tetris);
+    var c1 = try Console.init(rom);
     defer c1.deinit();
     for (0..1234) |_| c1.step(); // arbitrary mid-cycle
 
@@ -74,7 +55,7 @@ test "save-state round trip: arbitrary mid-frame" {
     defer buf.deinit();
     try c1.serialize(buf.writer());
 
-    var c2 = try Console.init(rom_tetris);
+    var c2 = try Console.init(rom);
     defer c2.deinit();
     var stream = std.io.fixedBufferStream(buf.items);
     try c2.deserialize(stream.reader());

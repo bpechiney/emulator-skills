@@ -70,34 +70,6 @@ Function-pointer tables compete with labeled `switch` on:
 
 **Recommendation**: labeled `switch` for the base opcode table. Function-pointer tables only when you need runtime patching (e.g., debugger trap insertion replacing one opcode with a breakpoint stub) — and even then prefer a `comptime` parameter that selects between a "trapping" and "non-trapping" dispatch loop, instantiated as separate concrete functions.
 
-## CB-prefix opcodes
-
-Game Boy and similar CPUs have a 256-opcode prefix table reached via a single byte (0xCB on Game Boy). Two reasonable shapes:
-
-**Shape 1 — nested labeled `switch`:**
-
-```zig
-.cb_prefix => {
-    const sub: CbOp = @enumFromInt(bus.read(cpu.pc));
-    cpu.pc +%= 1;
-    switch (sub) {
-        .rlc_b => { ... cpu.tick(8); return; },
-        .rlc_c => { ... cpu.tick(8); return; },
-        // ...
-    }
-},
-```
-
-**Shape 2 — separate function:**
-
-```zig
-.cb_prefix => {
-    return cb.step(cpu, bus);
-},
-```
-
-Shape 2 is simpler; Shape 1 keeps the locality argument. For greenfield Game Boy work, **prefer Shape 2** — the CB sub-table is large enough that inlining it inflates the dispatch fn for marginal gain. Reserve nested labeled `switch` for cases where the prefix sub-table is small (single-digit entries).
-
 ## `@branchHint` for hot/cold paths
 
 Zig 0.16 supports `@branchHint(.likely)` / `@branchHint(.unlikely)` / `@branchHint(.cold)`. Use sparingly — the compiler's profile-guided heuristics are usually better than hand-tuning. Reserve hints for:
@@ -110,20 +82,6 @@ if (cpu.pending_irq) {
     @branchHint(.unlikely);
     return cpu.serviceIrq(bus);
 }
-```
-
-## Pool patterns for hot-path objects
-
-The hot path does not allocate (standing rule #4). Objects with fixed cardinality (e.g., 40 OAM sprites, 4 APU channels, N mapper-bank windows) are pre-allocated as array fields on the console struct and indexed by `usize`. No `ArrayList`, no `std.heap`. When you need a "freelist" for transient work (e.g., a queue of pending DMA bytes), pre-size it at boot and overflow into a panic — overflow is a bug, not a fallback.
-
-```zig
-pub const Apu = struct {
-    square1: SquareChannel,
-    square2: SquareChannel,
-    wave: WaveChannel,
-    noise: NoiseChannel,
-    // No .channels: []Channel — fixed cardinality, named fields are clearer.
-};
 ```
 
 ## Cross-references

@@ -83,7 +83,7 @@ The active revision must be encoded in the save-state header. Loading a save-sta
 
 ```
 header:
-  magic: "FBSAVE\0\0"
+  magic: "<EMU>SAVE"
   version: u16
   revision: enum(u8) { dmg, mgb, sgb, sgb2, cgb, agb }
   ... rest of state ...

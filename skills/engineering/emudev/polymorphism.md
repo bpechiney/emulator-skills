@@ -42,9 +42,7 @@ pub const Mapper = union(enum) {
 
 `inline else` instantiates one specialized arm per active variant. The compiler can inline the call into each arm — the resulting code is comparable to a bare function call into `Mbc3.read` once the runtime tag is known.
 
-### Slicing mapper work
-
-When implementing a new mapper, **slice register-by-register, not mapper-by-mapper**. Each mapper has 2-6 register windows; one slice per register is the right granularity. A "implement MBC1" issue is too coarse — break it into "MBC1 ROM bank lower 5 bits", "MBC1 RAM/ROM mode", "MBC1 upper 2 bits with mode-1 bank-0 alias", etc. Each slice has a discrete test ROM that exercises it.
+When slicing mapper work for `/to-issues`, slice **register-by-register**, not mapper-by-mapper. One slice per mapper register is the right granularity; "implement MBC1" is too coarse.
 
 ## `comptime Bus: type` for CPU↔Bus
 
@@ -125,31 +123,6 @@ pub const RaylibRenderer = struct {
 ```
 
 Vtables aren't on the hot path (per-frame `present` calls are cheap), so the indirection is fine.
-
-## Hybrid: when does it make sense?
-
-For the **multi-system Console** case (a supervisor that hosts both Game Boy and NES cores in the same process), tagged `union(enum)` with two arms is fine. If you later want to load arbitrary cores at runtime (a plugin model), introduce a vtable. Until then, keep it closed.
-
-For mapper coprocessors (DSP-1, SuperFX, SA-1 on SNES), the tagged-union pattern still works — they're a closed set. You don't need a vtable just because the cardinality crept up.
-
-## Revision gating reuse
-
-Decision #6 (fidelity scope) often ends up reusing the tagged-union pattern. If your Game Boy emulator supports DMG and CGB:
-
-```zig
-pub const Revision = union(enum) {
-    dmg: Dmg,
-    cgb: Cgb,
-
-    pub fn step(self: *Revision, ...) void {
-        switch (self.*) {
-            inline else => |*r| r.step(...),
-        }
-    }
-};
-```
-
-Or, if revision is fixed at compile time per build (e.g., a feature flag selects DMG-only or CGB build), use `comptime Revision` instead. The choice between runtime (`union(enum)`) and compile-time (`comptime`) gating is itself part of decision #6.
 
 ## Cross-references
 

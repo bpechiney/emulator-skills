@@ -121,52 +121,13 @@ const out: u8 = @bitCast(self.lcdc);
 const ptr: *Lcdc = @ptrCast(&self.lcdc_byte);
 ```
 
-## Larger registers (16-bit, 24-bit)
+## Non-byte-width registers
 
-Same pattern, larger backing type:
+When a logical register isn't byte-sized (e.g. a 15-bit internal counter), declare the backing type to match the logical width — `packed struct(u15)` rather than `u16`. That documents the width in the type and prevents accidental sign-extension when the high bit is read.
 
-```zig
-pub const Loopy = packed struct(u15) {
-    coarse_x: u5,
-    coarse_y: u5,
-    nametable: u2,
-    fine_y: u3,
-};
+## Sprite tables: array of packed structs
 
-comptime {
-    std.debug.assert(@bitSizeOf(Loopy) == 15);
-}
-```
-
-Note backing type matches the actual logical width. The NES "loopy V" register is 15 bits, not 16; declaring `packed struct(u15)` documents that and prevents accidental sign-extension when reading bit 15.
-
-## OAM / sprite tables
-
-Sprite entries are packed structs of 4 (Game Boy) or 4 (NES) or 4 (SNES) bytes. Declare an array of structs:
-
-```zig
-pub const Sprite = packed struct(u32) {
-    y: u8,
-    x: u8,
-    tile: u8,
-    attr: SpriteAttr,
-};
-
-pub const SpriteAttr = packed struct(u8) {
-    palette_low: u3, // CGB: palette 0-7 / DMG: ignored
-    bank: u1,         // CGB: VRAM bank
-    palette_dmg: u1,  // DMG: 0 = OBP0, 1 = OBP1
-    flip_x: bool,
-    flip_y: bool,
-    bg_priority: bool,
-};
-
-pub const Oam = struct {
-    sprites: [40]Sprite, // Game Boy has 40 sprites
-};
-```
-
-Indexing into the OAM byte-wise (which is how the bus exposes it) means doing `@bitCast` on a 32-bit slice of the array:
+OAM / sprite tables are arrays of packed structs (4 bytes each on every target system here). The pattern is the same as a single register, plus byte-indexing for bus reads:
 
 ```zig
 pub fn oamRead(self: *Ppu, addr: u8) u8 {
@@ -177,7 +138,7 @@ pub fn oamRead(self: *Ppu, addr: u8) u8 {
 }
 ```
 
-Verify with `comptime` that the byte order matches the hardware spec — Game Boy OAM is `[Y, X, tile, attr]` in memory; declaring fields in that order makes `@bitCast` correct.
+Declare the sprite struct's fields in the order the hardware lays them out in memory; `@bitCast` then produces the correct byte order. Verify with a `comptime` assertion against a known sprite encoding from the system's spec.
 
 ## Cross-references
 
