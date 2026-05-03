@@ -2,12 +2,16 @@
 
 `build.zig` shape for a cycle-accurate emulator. Lean reference; not exhaustive Zig build-system theory.
 
-## Module graph: two-artifact split
+## Module graph: headless core + downstream artifacts
 
-The standard shape — the **two-artifact split**:
+The load-bearing invariant: **the core is headless** — it has no dependencies on a renderer, audio output, wall-clock, or input device. Tests, frontends, debuggers, and analysis tools all consume the core; the core consumes none of them. Adding any frontend/wall-clock dependency to the core breaks the headless-test invariant; resist the temptation.
 
-- **Core library** (`core` or `<system>_core`) — headless, deterministic, no frontend dependencies. Consumed by tests, by the frontend binary, by tools.
-- **Frontend binary** — depends on the core library plus whatever renderer / audio sink / input source you pick. Owns wall-clock timing, input handling, audio output.
+Beyond that invariant, the artifact graph varies:
+
+- **Core library** — the deterministic emulation. For systems with **multiple clock domains** (e.g., the SNES SPC700 audio coprocessor running asynchronously to the main 65816), the core itself is naturally a module graph: a top-level core module that imports per-domain sub-modules (main CPU, audio coprocessor, DSP, cartridge coprocessors). Single-`src/core.zig` works for systems with a single SoC (Game Boy, NES); multi-domain systems will want sub-modules.
+- **Downstream artifacts** — open-ended. Frontends (GUI, TUI, in-process debugger), tools (headless trace dumper, ROM analyzer, save-state dumper), the test-ROM runner, optionally wasm or embedded builds. Each declares its own dependency on the core. The skill doesn't prescribe "one frontend" — ship as many downstream artifacts as the project needs.
+
+The illustrative shape below shows a single-domain core plus one frontend exe; multi-domain cores compose more sub-modules into `core_mod`, and additional downstream artifacts follow the same `addImport("core", core_mod)` pattern.
 
 ```zig
 const std = @import("std");
@@ -17,6 +21,9 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     // --- Core library (headless) ---
+    // For multi-domain systems (e.g. SNES), this module's root file
+    // imports per-domain sub-modules rather than holding all state
+    // directly.
     const core_mod = b.createModule(.{
         .root_source_file = b.path("src/core.zig"),
         .target = target,
@@ -30,7 +37,7 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(core_lib);
 
-    // --- Frontend binary ---
+    // --- Frontend exe (one of potentially several downstream artifacts) ---
     const frontend_mod = b.createModule(.{
         .root_source_file = b.path("src/frontend/main.zig"),
         .target = target,
@@ -45,11 +52,14 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(frontend_exe);
 
+    // Additional downstream artifacts (debugger exe, headless trace
+    // dumper, wasm build, test-ROM runner, ...) are added with the
+    // same shape: a module that imports core_mod, then addExecutable
+    // / addLibrary as appropriate.
+
     // ... test wiring (next section) ...
 }
 ```
-
-The core library does not depend on a renderer. Adding a renderer dependency to the core breaks the headless-test invariant; resist the temptation.
 
 ## Test wiring
 
