@@ -7,7 +7,7 @@ description: Reviews Zig code for cycle-accurate Game Boy, NES, and SNES emulato
 
 Review posture for cycle-accurate retro console emulators in Zig 0.16+. Out of scope: leaks, format strings, allocator ergonomics, post-Writergate idioms — see anti-feature 5.
 
-## Methodology — seven rules
+## Methodology — eight rules
 
 1. **Defer to test ROMs over code aesthetics.** Ugly code that matches `nestest.log` is correct; elegant code that fails Blargg is wrong. In this domain, treat elegance as a smell until it's been run against the suite.
 2. **Ask "what cycle does this happen on?" before "is this code clean?"** Every memory access, flag update, and interrupt poll has a cycle number that's part of the contract with the rest of the system. Lose the cycle, lose the contract.
@@ -16,6 +16,7 @@ Review posture for cycle-accurate retro console emulators in Zig 0.16+. Out of s
 5. **State-modelling completeness.** For each component, ask: "what mutable state survives a save/load that isn't an obvious named field?" Implicit state hides in control flow — in-progress instruction cycle counter, edge-triggered interrupt latches, OAM/address latch toggles, partial 16-bit register writes, in-flight DMA progress, APU frame-counter sub-state, open-bus decay value. "Nothing implicit" is almost always wrong.
 6. **Comments-as-citations are a positive signal — opposite to default Zig style.** Look for citations of nesdev wiki, pandocs, fullsnes; named test ROMs; named games that depend on the quirk; matched hardware revision. The bug to flag is *uncited* quirky code, not the citations.
 7. **Region/revision is a review axis with named consequences.** Hardcoding region silently breaks specific behaviour: a hardcoded master-clock divider produces the wrong CPU rate on the other region (NES NTSC ÷12 vs PAL ÷16), a hardcoded OAM-bug path runs DMG behaviour on CGB (the bug is silicon-revision-gated, not universal), a hardcoded open-bus model misses the 1-CHIP SNES delta, and a hardcoded DMC rate table desyncs PAL audio (NTSC vs PAL DMC period tables differ). Ask: is region threaded as a parameter through every component that consumes it (CPU divider, PPU scanline count, APU rate table, mapper-IRQ tick source, OAM-bug gate), or is it hardcoded somewhere it'll bite later? 2A03 vs 2A07, DMG/MGB/SGB/CGB/AGB, original vs 1-CHIP SNES — each split has at least one cycle-observable consequence.
+8. **Falsifiability check at finding-formation.** For each finding, briefly state what evidence would disprove it. If disproof is impossible or fuzzy, the finding is speculation — downgrade evidence by one level. The reviewer's claim is falsifiable, or it's not a finding. This is the downstream protection paired with the fresh-context invocation discipline (see *Invocation context* below): fresh context prevents anchored priors; falsifiability prevents anchored conclusions.
 
 ## Anti-features — what this skill will NOT do
 
@@ -61,11 +62,16 @@ Two consequences of fresh-context invocation:
 
 ## Output shape
 
-Group findings by methodology rule (cycle / missing-behaviour / determinism / state / citation / region). For each finding:
+Group findings by methodology rule (cycle / missing-behaviour / determinism / state / citation / region). Within each group, sort by evidence: ✅ first, then ⚠️, then ❌.
+
+For each finding:
 
 1. **What's wrong or missing** (file:line if possible).
-2. **Why it matters** — the hardware behaviour it violates and a named game or scenario that depends on it. Cite the source (nesdev / pandocs / fullsnes).
-3. **Test-level confirmation strategy** — *required.* Either name the existing test ROM (and result address / interpretation) that fails on this bug, or, if no test ROM exists, describe the minimal reproducer or unit test that would catch it. A finding without this is just an opinion — say so explicitly and downgrade confidence.
-4. **Confidence** — hardware-confirmed, test-ROM-implied, documented-but-unverified, or speculation.
+2. **Why it matters** — the hardware behaviour it violates with citation (nesdev / pandocs / fullsnes), and either a named game or scenario that depends on it OR "no specific game known — structural finding" when the violation is structural (determinism, save-state field omission, etc.).
+3. **Evidence** — one of:
+    - **✅ Verified** — names the test ROM, result address, and pass/fail interpretation that confirms the bug.
+    - **⚠️ Documented** — cites the canonical source describing the violated behaviour (nesdev / pandocs / fullsnes), with a minimal reproducer or unit-test sketch. No test ROM directly catches this yet.
+    - **❌ Speculation** — no test ROM, no canonical source directly speaks to this; the claim is pattern-match or intuition. Findings at this level must not include a fix — flag as research-needed.
+4. **Intent ambiguity?** — yes / no. If yes, the finding could be intentional-but-undocumented (silicon quirk preserved deliberately, optimization that drops a flag, etc.); the fix is likely citation discipline (rule 6 — add a citation comment so the intent is explicit) rather than a code change.
 
-Do not suggest a fix when the correct behaviour isn't documented in the loaded references — flag it as needing research instead.
+Apply rule 8 (falsifiability) before locking in the evidence level: if you can't state what would disprove the finding, downgrade to the next level down.
