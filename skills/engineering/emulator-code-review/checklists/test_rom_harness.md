@@ -92,7 +92,7 @@ The harness output is a triage signal, not a fix. "Blargg `cpu_dummy_writes_oam.
 
 ## 5. Failure-mode mapping back to component checklists
 
-A failing test ROM is a *symptom*; the harness's role in diagnosis is to point at the right component checklist. This is the routing-by-symptom shape — the same as [`failure_diagnosis.md`](failure_diagnosis.md), specialised to the harness output.
+A failing test ROM is a *symptom*; the harness's role in diagnosis is to point at the right component checklist. The mapping below routes ROM-family failures to the checklist sections that catch them.
 
 **Each ROM family / suite has a documented mapping from failure to relevant checklist?**
 - Blargg `cpu_*` / `instr_*` / `branch_timing` failures → [`cpu_review.md`](cpu_review.md) §1 (cycle accounting), §2 (dummy reads/writes), §4 (interrupt polling).
