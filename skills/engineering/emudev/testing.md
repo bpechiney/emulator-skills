@@ -36,7 +36,7 @@ test "determinism: <rom> boot" {
 
 Common determinism violations to watch for:
 
-- Wall-clock reads in the core (chippy ADR 0003 forbids these). Use simulated cycle counters, not `std.time.milliTimestamp()`.
+- Wall-clock reads in the core. Use simulated cycle counters, not `std.time.milliTimestamp()`.
 - `std.crypto.random` or any unseeded RNG.
 - Pointer-address-dependent behavior (e.g., hashing on `@intFromPtr`).
 - Iteration order over `std.AutoHashMap` (stable per-build, but not stable across allocator differences — prefer arrays or `ArrayHashMap`).
@@ -89,7 +89,7 @@ This is heavy; reserve for CPU bring-up and PPU mode-3 timing work, not as a def
 
 ## Frontends and headless
 
-The core must be **headless-capable**. Tests do not require a window or audio device. The frontend (raylib, SDL, TUI) is a separate artifact (chippy ADR 0001) that consumes the core's framebuffer / audio buffer. Tests run against the core directly.
+The core must be **headless-capable**. Tests do not require a window or audio device. The frontend (raylib, SDL, TUI) is a separate artifact that consumes the core's framebuffer / audio buffer. Tests run against the core directly.
 
 Determinism + headless together mean every test is `zig build test` on a CI runner with no graphical environment. No `xvfb`, no headless-Chrome equivalents. This is the single biggest win the headless-from-day-one decision buys.
 

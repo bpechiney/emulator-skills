@@ -22,7 +22,7 @@ Ask one question at a time. Don't dump the form.
 
 > Which retro console does this emulator emulate? `gameboy`, `nes`, or `snes`?
 
-The valid set is exactly those three. If the user names something else (e.g. CHIP-8, Atari 2600, Genesis), stop and tell them: this skill targets Game Boy / NES / SNES; CHIP-8 is intentionally out of scope (see chippy as the canonical CHIP-8 reference); other systems would require extending the skill first.
+The valid set is exactly those three. If the user names something else (CHIP-8, Atari 2600, Genesis, etc.), stop and tell them: this skill targets Game Boy / NES / SNES only; other systems would require extending the skill first.
 
 ### 2. Cycle-accuracy tier
 

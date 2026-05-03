@@ -4,7 +4,7 @@
 
 ## Module graph: two-artifact split
 
-The standard shape (chippy ADR 0001 "two-artifact split"; carries forward to Game Boy / NES / SNES):
+The standard shape — the **two-artifact split**:
 
 - **Core library** (`core` or `<system>_core`) — headless, deterministic, no frontend dependencies. Consumed by tests, by the frontend binary, by tools.
 - **Frontend binary** — depends on the core library plus a renderer (raylib / SDL / TUI). Owns wall-clock timing, input handling, audio output.
@@ -117,7 +117,7 @@ Don't enable `ReleaseFast` by default for shipped builds; the slight perf gain r
 
 ## Pinning the Zig version
 
-Pin the Zig version somehow (Nix flake, asdf, mise, manual instructions in README) so dev / pre-commit / CI all run the same compiler. The skill assumes Zig 0.16 — drift between local and CI is the most common source of "works on my machine" emulator-build issues. Chippy uses a Nix flake (`flake.nix`); pick whichever matches your toolchain habits.
+Pin the Zig version somehow (Nix flake, asdf, mise, manual instructions in README) so dev / pre-commit / CI all run the same compiler. The skill assumes Zig 0.16 — drift between local and CI is the most common source of "works on my machine" emulator-build issues. Pick whichever toolchain-pinning approach matches your habits.
 
 ## Submodule init for test ROMs
 
