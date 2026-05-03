@@ -47,9 +47,9 @@ The CPU dispatch loop, PPU pixel pipeline, and APU sample generator do not alloc
 
 Every emudev repo has a typed `Hacks` namespace. Location declared in `docs/agents/emudev.md`. Every active hack is named there with a removal target. Inline `HACK[Game]` tags at use sites are the breadcrumbs; the namespace is the catalog. The point is auditability — untyped, scattered hacks become invisible debt; a typed catalog stays prosecutable.
 
-## Six decisions worth grilling
+## Seven decisions worth grilling
 
-Before implementing a new emulator (or a major subsystem), invoke `/grill-with-docs` to walk these candidates. Each typically passes the three-test (hard-to-reverse + surprising + real-trade-off) — `grill-with-docs` decides whether each warrants an ADR for *this* repo.
+Before implementing a new emulator (or a major subsystem), invoke `/grill-with-docs` to walk these candidates. Each typically passes the three-test (hard-to-reverse + surprising + real-trade-off) — `grill-with-docs` decides whether each warrants an ADR for *this* repo. Decision #7 only applies to multi-CPU systems; single-CPU targets can skip it.
 
 1. **Dispatch strategy** — labeled `switch` with `continue :dispatch op` (the Zig 0.16 idiom; +13% on Zig's own tokenizer; observed in 0/12 surveyed Zig emulators) vs function-pointer table vs giant `switch`. See [dispatch.md](./dispatch.md).
 
@@ -62,6 +62,13 @@ Before implementing a new emulator (or a major subsystem), invoke `/grill-with-d
 5. **CPU↔Bus boundary** — `comptime Bus: type` (monomorphized per concrete bus type) vs vtable (runtime swap). Touches every instruction call — easier to commit early than to refactor later.
 
 6. **Fidelity scope + gating mechanism** — which hardware revisions, regions, peripherals/accessories, boot ROMs, in-scope cartridge mappers, and analog characteristics this emulator faithfully reproduces, and how scope-dependent paths are gated (compile-time `comptime` vs runtime field). Concrete per-system candidates live in the consuming repo's `docs/adr/` (or `CONTEXT.md` for stable canon like hardware codenames). Entangled with #4 (save-state must encode the active revision) and #2 (revision gating may reuse the tagged-union pattern from mapper polymorphism).
+
+7. **Inter-CPU coordination** *(multi-CPU systems only)* — when the system has more than one programmable CPU running on independent clocks (SNES main 65816 + SPC700 audio coprocessor; cartridge coprocessors like SuperFX or SA-1; SGB-mode Game Boy under SNES host), pick a scheme:
+    - **Catch-up scheduler** — each CPU runs ahead independently; on inter-CPU communication, the lagging CPU is stepped forward to sync. Fastest to write; usually fastest to run; can drift on tight inter-CPU timing.
+    - **Cycle-locked stepping** — every minimum clock tick advances all CPUs together. Most accurate; slowest; the high-fidelity-emulator school.
+    - **Coroutine-based** — each CPU is a coroutine that yields at sync points. Splits the difference; requires explicit yield-machinery and careful save-state handling (resumable coroutines complicate serialization).
+
+    Hard to reverse — the choice shapes the entire emulation control flow, the save-state schema (decision #4), and the per-CPU bus boundary (decision #5). Skip for single-CPU targets (typical Game Boy and NES emulators); load-bearing for SNES.
 
 Note: "fidelity scope" (the ADR-level scope choice) is distinct from `QUIRK` (the inline tag for universal hardware quirks the cycle-accuracy tier dictates you reproduce regardless). See [comments.md](./comments.md) for the naming hygiene.
 

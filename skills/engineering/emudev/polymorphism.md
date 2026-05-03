@@ -7,7 +7,7 @@ Choosing between tagged union, vtable, and `comptime` monomorphization for the r
 | Boundary | Cardinality | Open or closed? | Recommended shape |
 |---|---|---|---|
 | **Mappers / cartridges** | NES ~250, Game Boy ~10, SNES ~30 | Closed historical set — no new ones will be invented | Tagged `union(enum)` with `inline else` dispatch |
-| **CPU↔Bus** | 1 per concrete bus type (typically just *the* bus) | Closed at compile time within a build | `comptime Bus: type` (monomorphized) |
+| **CPU↔Bus** (per CPU in the system) | 1 per concrete bus type per CPU (single-CPU targets have one; multi-CPU targets have one per CPU) | Closed at compile time within a build | `comptime Bus: type` (monomorphized) |
 | **Frontend** (renderer, audio, input) | Open-ended | Open — users may add new ones | Vtable (function-pointer struct) |
 | **Multi-system Console** | If you ever build one supervisor that can host both GB and NES cores | Closed but small | Tagged `union(enum)` |
 
@@ -59,6 +59,12 @@ pub fn Cpu(comptime Bus: type) type {
 Trade-off: testability. With `comptime Bus`, mocking the bus means defining a `MockBus` type with the same surface. That's slightly more friction than passing a vtable, but the duck-typing structural check Zig performs is enough for tests — `MockBus` doesn't need a formal interface declaration.
 
 If you decide testability outweighs the perf gain, use a vtable. But for cycle-accurate work, the bus is on the hottest of paths and should be monomorphized.
+
+### Multi-CPU systems
+
+For systems with more than one programmable CPU (SNES main 65816 + SPC700; cartridge coprocessors like SuperFX or SA-1), each CPU is its own `Cpu(<ItsBus>)` instantiation with its own bus type. The `comptime Bus: type` pattern doesn't change — it just gets applied N times.
+
+What `comptime Bus` does **not** address is **inter-CPU coordination** — when CPU A advances vs CPU B, how they synchronize on inter-CPU communication, how the save-state captures consistent state across both. That's a separate hard-to-reverse decision (catch-up scheduler vs cycle-locked stepping vs coroutine-based) and is decision #7 in [SKILL.md](./SKILL.md). Walk it via `/grill-with-docs` before instantiating the second `Cpu`.
 
 ## Vtable (function-pointer struct) for frontends
 
