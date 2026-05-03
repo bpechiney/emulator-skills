@@ -94,4 +94,4 @@ Never blindly overwrite. Never delete fields the skill doesn't recognize.
 
 After lazy creation completes, suggest the next step:
 
-> Setup complete. Before implementing significant work, consider running `/grill-with-docs` against the six load-bearing decisions named in `/emudev`'s SKILL.md. ADRs landed early in greenfield work cost less than ADRs landed late.
+> Setup complete. Before implementing significant work, consider running `/grill-with-docs` against the seven load-bearing decisions named in `/emudev`'s SKILL.md (#7 only applies to multi-CPU designs). ADRs landed early in greenfield work cost less than ADRs landed late.

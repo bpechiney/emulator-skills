@@ -8,7 +8,8 @@ Zig 0.16's labeled `switch` form is the recommended dispatch pattern for opcode 
 
 ```zig
 // Op is an enum(u8) of every opcode for the target CPU.
-pub fn step(cpu: *Cpu, bus: anytype) void {
+// Cpu is parameterized over Bus (see polymorphism.md), so step takes *Bus.
+pub fn step(cpu: *Cpu, bus: *Bus) void {
     var op: Op = @enumFromInt(bus.read(cpu.pc));
     cpu.pc +%= 1;
 
@@ -33,7 +34,7 @@ pub fn step(cpu: *Cpu, bus: anytype) void {
 Key points:
 
 - `dispatch:` labels the `switch`; `continue :dispatch op;` re-enters with a new tag value without unwinding the frame, letting the compiler specialize the indirect jump per arm.
-- Tail-chaining is most useful for opcodes that naturally flow into the next instruction without a separate fetch boundary (e.g., decoded prefix instructions).
+- Tail-chaining is most useful for opcode sequences where one opcode's body wants to fall through to the next opcode's dispatch without unwinding (e.g., when a single byte of work belongs to a multi-step instruction whose later steps share dispatch infrastructure).
 
 ## When to use a function-pointer table instead
 

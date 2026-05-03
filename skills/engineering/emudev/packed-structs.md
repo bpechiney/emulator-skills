@@ -98,18 +98,18 @@ When a logical register isn't byte-sized (e.g. a 15-bit internal counter), decla
 
 ## Sprite tables: array of packed structs
 
-OAM / sprite tables are arrays of packed structs (4 bytes each on every target system here). The pattern is the same as a single register, plus byte-indexing for bus reads:
+OAM / sprite tables are arrays of packed structs. The main per-sprite entry is typically 4 bytes; some systems carry auxiliary metadata in a separate, smaller table (e.g., SNES splits OAM into a primary table at 4 bytes per sprite plus a secondary table that packs upper-X / size bits across multiple sprites). Both shapes use the same pattern — a packed-struct array plus byte-indexed bus reads:
 
 ```zig
 pub fn oamRead(self: *Ppu, addr: u8) u8 {
-    const sprite_idx = addr / 4;
-    const field_idx = addr % 4;
-    const bytes: [4]u8 = @bitCast(self.oam.sprites[sprite_idx]);
+    const sprite_idx = addr / @sizeOf(Sprite);
+    const field_idx  = addr % @sizeOf(Sprite);
+    const bytes: [@sizeOf(Sprite)]u8 = @bitCast(self.oam.sprites[sprite_idx]);
     return bytes[field_idx];
 }
 ```
 
-Declare the sprite struct's fields in the order the hardware lays them out in memory; `@bitCast` then produces the correct byte order. Verify with a `comptime` assertion against a known sprite encoding from the system's spec.
+Declare the sprite struct's fields in the order the hardware lays them out in memory; `@bitCast` then produces the correct byte order. Verify with a `comptime` assertion against a known sprite encoding from the system's spec. For systems with split OAM tables, repeat the same pattern for each table with its own packed-struct type.
 
 ## Cross-references
 

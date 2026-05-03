@@ -49,7 +49,7 @@ Every emudev repo has a typed `Hacks` namespace. Location declared in `docs/agen
 
 ## Seven decisions worth grilling
 
-Before implementing a new emulator (or a major subsystem), invoke `/grill-with-docs` to walk these candidates. Each typically passes the three-test (hard-to-reverse + surprising + real-trade-off) — `grill-with-docs` decides whether each warrants an ADR for *this* repo. Decision #7 only applies to multi-CPU systems; single-CPU targets can skip it.
+Before implementing a new emulator (or a major subsystem), invoke `/grill-with-docs` to walk these candidates. Each typically passes the three-test (hard-to-reverse + surprising + real-trade-off) — `grill-with-docs` decides whether each warrants an ADR for *this* repo. Decision #7 only applies when the design includes more than one programmable CPU; designs with a single CPU can skip it.
 
 1. **Dispatch strategy** — labeled `switch` with `continue :dispatch op` (the Zig 0.16 idiom; +13% on Zig's own tokenizer; observed in 0/12 surveyed Zig emulators) vs function-pointer table vs giant `switch`. See [dispatch.md](./dispatch.md).
 
@@ -68,7 +68,7 @@ Before implementing a new emulator (or a major subsystem), invoke `/grill-with-d
     - **Cycle-locked stepping** — every minimum clock tick advances all CPUs together. Most accurate; slowest; the high-fidelity-emulator school.
     - **Coroutine-based** — each CPU is a coroutine that yields at sync points. Splits the difference; requires explicit yield-machinery and careful save-state handling (resumable coroutines complicate serialization).
 
-    Hard to reverse — the choice shapes the entire emulation control flow, the save-state schema (decision #4), and the per-CPU bus boundary (decision #5). Skip for single-CPU targets (typical Game Boy and NES emulators); load-bearing for SNES.
+    Hard to reverse — the choice shapes the entire emulation control flow, the save-state schema (decision #4), and the per-CPU bus boundary (decision #5). Skip when the design has only one programmable CPU; load-bearing when there are two or more (typical for SNES; for Game Boy and NES, single-CPU is the usual baseline but expansion-coprocessor scope choices in decision #6 can introduce a second CPU and bring this decision back into play).
 
 Note: "fidelity scope" (the ADR-level scope choice) is distinct from `QUIRK` (the inline tag for universal hardware quirks the cycle-accuracy tier dictates you reproduce regardless). See [comments.md](./comments.md) for the naming hygiene.
 
@@ -77,7 +77,7 @@ Note: "fidelity scope" (the ADR-level scope choice) is distinct from `QUIRK` (th
 Emudev defers loops and processes to sibling skills. It contributes domain content; it does not parallel their orchestration.
 
 - **`/tdd`** drives the red-green-refactor loop. Emudev provides *what to test against* (test ROMs, golden traces, determinism, save-state round-trip — see [testing.md](./testing.md)) and *how to write the implementation* (citations, dispatch, packed structs).
-- **`/grill-with-docs`** walks the six load-bearing decisions above. Emudev does not write ADRs directly.
+- **`/grill-with-docs`** walks the seven load-bearing decisions above. Emudev does not write ADRs directly.
 - **`/to-issues`** slices implementation work into vertical tracer-bullet issues. Emudev does not parallel its slicing logic.
 - **`/diagnose`** runs the hardware-quirk debugging loop. Emulator dev is bug-hunt-heavy; `/diagnose` is the daily driver.
 - **`/improve-codebase-architecture`** reads ADRs produced via `/grill-with-docs`. No direct integration.

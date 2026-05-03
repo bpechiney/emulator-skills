@@ -18,7 +18,7 @@ Per-system suite-to-shape mappings, vendoring policy, and signal-extraction conv
 
 Re-running the same ROM with the same input and the same starting state must produce **bit-identical** internal state at every cycle.
 
-Concrete rule: the test harness runs each ROM twice, captures the full console state at frame 60, and asserts byte-for-byte equality. This test exists in every emudev repo from M0.
+Concrete rule: the test harness runs each ROM twice, captures the full console state at frame 60, and asserts byte-for-byte equality. This test exists in every emudev repo from day one.
 
 ```zig
 test "determinism: <rom> boot" {
@@ -79,15 +79,15 @@ This catches schema bugs (off-by-one in length-prefixed arrays, wrong byte order
 
 ### Versioning
 
-Save-state schema is versioned from M0. The schema header carries `magic`, `version`, and `revision_tag` (the active fidelity-scope revision per decision #6). Migration discipline is decision #4 — typical answer is an explicit ladder where each version-N reader knows how to read version-N-minus-1, with a fallback "this save is too old" error.
+Save-state schema is versioned from day one. The schema header carries `magic`, `version`, and `revision_tag` (the active fidelity-scope revision per decision #6). Migration discipline is decision #4 — typical answer is an explicit ladder where each version-N reader knows how to read version-N-minus-1, with a fallback "this save is too old" error.
 
 Don't decide migration discipline post-hoc — bumping a version without a migration breaks every user save.
 
 ## Golden traces
 
-For mid-build verification of cycle-exact paths (specifically the CPU during opcode bring-up), capture **golden traces**: a ROM-driven log of every CPU register plus cycle count per instruction. Diff against a known-good reference emulator's trace for the same ROM. The first divergence tells you exactly which opcode mis-implements something.
+For mid-build verification of cycle-exact paths (specifically the CPU during opcode bring-up), capture **golden traces**: a ROM-driven log of every register of the CPU under test, plus cycle count per instruction. Diff against a known-good reference emulator's trace for the same ROM. The first divergence tells you exactly which opcode mis-implements something. For multi-CPU designs, capture a separate trace per CPU.
 
-This is heavy; reserve for CPU bring-up and PPU mode-3 timing work, not as a default test.
+This is heavy; reserve for CPU bring-up and cycle-exact PPU paths, not as a default test.
 
 ## Frontends and headless
 

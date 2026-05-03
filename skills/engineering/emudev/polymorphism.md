@@ -9,7 +9,6 @@ Choosing between tagged union, vtable, and `comptime` monomorphization for the r
 | **Mappers / cartridges** | NES ~250, Game Boy ~10, SNES ~30 | Closed historical set — no new ones will be invented | Tagged `union(enum)` with `inline else` dispatch |
 | **CPU↔Bus** (per CPU in the system) | 1 per concrete bus type per CPU (single-CPU targets have one; multi-CPU targets have one per CPU) | Closed at compile time within a build | `comptime Bus: type` (monomorphized) |
 | **Frontend** (renderer, audio, input) | Open-ended | Open — users may add new ones | Vtable (function-pointer struct) |
-| **Multi-system Console** | If you ever build one supervisor that can host both GB and NES cores | Closed but small | Tagged `union(enum)` |
 
 The temptation to use a vtable everywhere because "polymorphism is polymorphism" leaves performance on the table for the hot-path closed-set cases (mappers, bus). The temptation to use tagged unions everywhere creates impossible-to-extend frontends. **Match the shape to the openness of the set.**
 
@@ -33,9 +32,9 @@ pub const Mapper = union(enum) {
 };
 ```
 
-`inline else` instantiates one specialized arm per active variant. The compiler can inline the call into each arm — the resulting code is comparable to a bare function call into `Mbc3.read` once the runtime tag is known.
+`inline else` instantiates one specialized arm per active variant. The compiler can inline the call into each arm — the resulting code is comparable to a bare function call into the chosen variant's `read` once the runtime tag is known.
 
-When slicing mapper work for `/to-issues`, slice **register-by-register**, not mapper-by-mapper. One slice per mapper register is the right granularity; "implement MBC1" is too coarse.
+When slicing mapper work for `/to-issues`, slice **register-by-register**, not mapper-by-mapper. One slice per mapper register is the right granularity; "implement <some-mapper>" is too coarse.
 
 ## `comptime Bus: type` for CPU↔Bus
 

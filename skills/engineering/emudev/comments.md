@@ -36,7 +36,7 @@ Real hardware does this; your emulator must reproduce it (subject to the cycle-a
 
 ### `HW` — hardware-revision-specific
 
-Behavior varies between revisions of the same console. Use the gbdev codename canon: DMG / MGB / SGB / SGB2 / CGB / AGB; 2C02 / 2C07; 1-CHIP / 2/1/3-CHIP. The bracketed value is the revision (or set of revisions) the code path applies to.
+Behavior varies between revisions of the same console. Use the **community-canonical revision codename for the system you're targeting** — each system has its own canon (e.g. DMG/MGB/SGB/SGB2/CGB/AGB for Game Boy hardware revisions, 2C02/2C07 for NES PPU variants, 1-CHIP/2-CHIP/3-CHIP for SNES PPU board revisions). The bracketed value is the revision (or set of revisions) the code path applies to.
 
 ```zig
 // HW[CGB,AGB]: KEY1 register controls CPU clock doubling.
@@ -84,7 +84,7 @@ Always carries a linked issue. No floating TODOs.
 
 ## Naming hygiene: `QUIRK` vs fidelity scope
 
-The `QUIRK` tag annotates **universal** non-obvious hardware behavior (HALT-bug, sprite-0 hit, mode-3 length variance). These behaviors are present on every revision of the system; whether you reproduce them is dictated by your cycle-accuracy tier (decision #3).
+The `QUIRK` tag annotates **universal** non-obvious hardware behavior (mid-instruction interrupt edge cases, sprite-priority resolution oddities, mid-frame palette/OAM write timing, etc.). These behaviors are present on every revision of the system; whether you reproduce them is dictated by your cycle-accuracy tier (decision #3).
 
 The phrase **"fidelity scope"** (decision #6) refers to the ADR-level scope choice — *which revisions, regions, peripherals, boot ROMs, and analog characteristics* this emulator reproduces at all. That's not a `QUIRK` tag — it's a `comptime` configuration, a revision flag, an ADR.
 
