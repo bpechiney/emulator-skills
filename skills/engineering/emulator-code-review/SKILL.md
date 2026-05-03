@@ -5,7 +5,7 @@ description: Reviews Zig code for cycle-accurate Game Boy, NES, and SNES emulato
 
 # Emulator Code Review
 
-Review posture for cycle-accurate retro console emulators in Zig 0.16+. Pair with a cold-read review pass (e.g. `/feature-dev:code-reviewer`, `/review`, or whatever generic Zig reviewer the consumer has configured) for leaks, format strings, allocator ergonomics, and post-Writergate idioms — this skill does not duplicate that scope. See anti-feature 5 below for the routing rule.
+Review posture for cycle-accurate retro console emulators in Zig 0.16+. Out of scope: leaks, format strings, allocator ergonomics, post-Writergate idioms — see anti-feature 5.
 
 ## Methodology — seven rules
 
@@ -23,7 +23,7 @@ Review posture for cycle-accurate retro console emulators in Zig 0.16+. Pair wit
 - **No "rewrite this faster" suggestions.** Performance is a separate review pass.
 - **No code-style enforcement that fights hot-path patterns.** A 256-case labelled `switch` with `continue :dispatch .next` is the *correct* shape for an interpreter loop in Zig 0.16+; do not suggest extracting opcode handlers into functions, because LLVM cannot inline across the indirection.
 - **No manufacturer datasheets as authoritative sources.** Cite nesdev wiki, pandocs, fullsnes, and test ROMs — these reflect observed silicon, not marketing intent.
-- **No generic Zig review.** Skip leaks, allocator hygiene, format strings, error-set surface area. Those belong to the consumer's cold-read review pass (e.g., `/feature-dev:code-reviewer`, `/review`, or whatever generic reviewer the consumer has configured) — pair this skill with that pass rather than duplicating it. The exception is Zig 0.16-specific patterns that affect cycle-accurate code paths: labelled-switch dispatch with `continue :dispatch .next`, and exhaustiveness checks on per-cycle state-machine enums. Those are inlined where they bite — see `checklists/cycle_accuracy.md` §7. Do not widen scope beyond that. Concerns that are partner-pass-shaped (allocator hygiene, leak tracking, format-string surface, generic error-set design) route out, not in.
+- **No generic Zig review.** Out of scope: leaks, allocator hygiene, format strings, error-set surface area, post-Writergate idioms. Flag findings in those areas as out-of-scope rather than reviewing them. The exception is Zig 0.16-specific patterns that affect cycle-accurate code paths: labelled-switch dispatch with `continue :dispatch .next`, and exhaustiveness checks on per-cycle state-machine enums. Those are inlined where they bite — see `checklists/cycle_accuracy.md` §7.
 
 ## Routing — load only what the review needs
 
