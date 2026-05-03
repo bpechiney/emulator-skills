@@ -30,6 +30,8 @@ Review posture for cycle-accurate retro console emulators in Zig 0.16+. Out of s
 
 Always load the relevant **component checklist** for the file under review. Add `checklists/cycle_accuracy.md` for any timing-sensitive review, and `references/test_roms.md` when the user references a specific ROM result. Per-system citation lists live at `references/{nes,gameboy,snes}.md` — load these when a finding needs an external citation pointer; checklists already cite inline.
 
+The rows below dispatch checklists, not reviewers. A PR touching multiple modules needs one reviewer holding all the relevant checklists, not separate reviewers per module — most insidious emulator bugs cross module boundaries (DMC sample-fetch CPU stealing, MMC3 IRQ shifting sprite-0 hit timing, region threading between CPU divider and OAM-bug gate). Split per module only if the diff is too large to hold; otherwise one reviewer with the full diff is the default.
+
 | Reviewing... | Load |
 |---|---|
 | NES CPU (6502 / 2A03) | `checklists/cpu_review.md` + `checklists/cycle_accuracy.md` |
