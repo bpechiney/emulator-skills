@@ -17,6 +17,8 @@ Spend disproportionate effort here. **Be aggressive. Be creative. Refuse to give
 
 ### Ways to construct one — try them in roughly this order
 
+**Setup cost varies — verify the harness before suggesting a technique.** Zero-setup techniques (save-state round-trip equivalence, throwaway harness, bisection, conditional breakpoints) work in any repo. Repo-infrastructure techniques (test-ROM result-address assertion, golden-frame hash diff, controller-input replay) require the project to have wired the test-ROM submodule, snapshot directory, or input-log format. External-tooling techniques (CPU-trace differential, reference-emulator differential) require a reference emulator binary *and* a known trace-export invocation already wired into the project — Mesen 2 / SameBoy / ares don't drive themselves. Check `docs/agents/emudev.md` and the repo layout for what's actually available. If the harness for a technique doesn't exist, drop to a lower-cost technique or build the harness as Phase 1 work — don't pretend a technique is usable when it isn't.
+
 1. **Test-ROM result-address assertion.** Run a known test ROM (blargg, mooneye-test-suite, nestest, blargg APU/PPU suites, fullsnes test pack) and read the documented result byte (e.g. `$6000`/`$6004` for blargg, `$F000` for nestest, OAM/VRAM dumps for PPU tests). Assert pass/fail. The strongest emulator feedback loop when one exists.
 2. **CPU-trace differential.** Run an instruction trace against a reference log (`nestest.log`, BGB / SameBoy trace dump, Mesen 2 trace log for SNES). Diff per cycle. The first diverging cycle is the bug.
 3. **Golden-frame hash diff.** Boot deterministically, run N frames, hash the framebuffer, compare to a stored reference snapshot. Fail loudly on divergence.
