@@ -18,9 +18,9 @@ Spend disproportionate effort here. **Be aggressive. Be creative. Refuse to give
 ### Ways to construct one — try them in roughly this order
 
 1. **Test-ROM result-address assertion.** Run a known test ROM (blargg, mooneye-test-suite, nestest, blargg APU/PPU suites, fullsnes test pack) and read the documented result byte (e.g. `$6000`/`$6004` for blargg, `$F000` for nestest, OAM/VRAM dumps for PPU tests). Assert pass/fail. The strongest emulator feedback loop when one exists.
-2. **CPU-trace differential.** Run an instruction trace against a reference log (`nestest.log`, BGB trace dump, bsnes-plus instruction log). Diff per cycle. The first diverging cycle is the bug.
+2. **CPU-trace differential.** Run an instruction trace against a reference log (`nestest.log`, BGB / SameBoy trace dump, Mesen 2 trace log for SNES). Diff per cycle. The first diverging cycle is the bug.
 3. **Golden-frame hash diff.** Boot deterministically, run N frames, hash the framebuffer, compare to a stored reference snapshot. Fail loudly on divergence.
-4. **Reference-emulator differential.** Same ROM, same input, same N cycles through a citation-grade reference (Mesen for NES, BGB / SameBoy for Game Boy, bsnes-plus / Mesen-S for SNES). Diff observable state — CPU registers, PPU/APU register file, framebuffer hash.
+4. **Reference-emulator differential.** Same ROM, same input, same N cycles through a citation-grade reference (Mesen for NES, BGB / SameBoy for Game Boy, Mesen 2 / ares for SNES). Diff observable state — CPU registers, PPU/APU register file, framebuffer hash.
 5. **Save-state round-trip equivalence.** `save → load → run K cycles` must produce the same hash as `run K cycles` from the unsaved baseline. A diff exposes implicit state missing from the serializer.
 6. **Controller-input replay.** Record a deterministic input log against a real ROM scenario (boot to title, press Start, walk left until tile X triggers); replay it through the emulator with frame-perfect timing.
 7. **Bisection harness.** If the bug appeared between two known states (commit, dataset, mapper revision), automate "boot at state X, check, repeat" so you can `git bisect run` it.
