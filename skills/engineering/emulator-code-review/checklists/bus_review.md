@@ -2,8 +2,6 @@
 
 Covers the system bus and memory-map plumbing for NES, Game Boy, and SNES. The bus is the most **platform-divergent** component in the entire skill — NES has separate CPU and PPU buses interacting via OAM DMA / DMC steal; GB has a single bus with OAM DMA bus-lockout; SNES has S-CPU + B-bus (PPU/APU IO) + cart bus with multi-channel DMA/HDMA arbitration plus coprocessor contention.
 
-**Do not abstract these into a single "bus model" review section.** The platforms genuinely do not share a model — questions are platform-tagged throughout. The temptation to factor out a "generic bus" section is the same trap as factoring out generic Zig review (rule SKILL.md §0): it loses the substance.
-
 ---
 
 ## 1. Open bus (methodology rule 3)
@@ -92,8 +90,6 @@ The framework — see [fullsnes — CPU and PPU registers / open-bus sections](h
 
 ## 4. Implicit bus state (methodology rule 5)
 
-> Note: the previous "Memory-map mirrors and unmapped regions" section was deleted during the audit pass — its content was pure standing-fact (address tables) that already lives at the canonical references ([nesdev wiki — CPU memory map](https://www.nesdev.org/wiki/CPU_memory_map), [pandocs — Memory Map](https://gbdev.io/pandocs/Memory_Map.html), [fullsnes — Memory Map](https://problemkaputt.de/fullsnes.htm)). The one heuristic worth preserving — *writes to mirror/unmapped regions are silently dropped, not panicked* — is already covered in `mapper_review.md` §4 (CHR-RAM disabled writes) and §8 (PRG-ROM-region writes with no mapper register). When a bus implementation panics on an unmapped write, route the finding through those mapper-review entries.
-
 Same enumeration discipline as `mapper_review.md` §5: walk every implicit-state field on the canonical per-platform reference and verify each round-trips through the serializer/deserializer with no truncation. The failure mode is omission.
 
 ### Per-platform serialized state (walk against the reference)
@@ -124,7 +120,7 @@ Same enumeration discipline as `mapper_review.md` §5: walk every implicit-state
 
 ## 7. Test-ROM correspondence (methodology rule 1)
 
-This section maps **review triggers → ROMs to re-run**. For ROM identity follow the canonical-source pointers in `references/test_roms.md` to the upstream archive — identity rows do not live in this skill.
+This section maps **review triggers → ROMs to re-run**. For ROM identity follow the canonical-source pointers in `references/test_roms.md` to the upstream archive.
 
 | Change touches... | Re-run at minimum (NES) |
 |---|---|

@@ -1,7 +1,5 @@
 # SNES Citations (Super Famicom / SNES)
 
-Standing-fact tables (master-clock dividers, hardware-revision matrix, memory maps, M/X mode behaviour, mode 7 math, DMA cycle costs, coprocessor enumeration, header detection) have been evicted from this file — they belong next to the consuming repo's code (`CONTEXT.md`, `docs/`, or per-component reference) where they can be kept current with that codebase. Cite the canonical sources below directly from checklists.
-
 Cite **fullsnes** (`problemkaputt.de/fullsnes.htm`) as primary. Anomie's docs, byuu/Near's bsnes/higan technical notes, and the Super Famicom Development Wiki (`wiki.superfamicom.org`) are also authoritative. The Nintendo Developer Manual is **not** — it documents intent, not silicon.
 
 ---

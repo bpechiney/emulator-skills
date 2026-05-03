@@ -1,6 +1,6 @@
 # Test ROM Reference
 
-**Identity rows have been evicted.** Per-ROM "what it tests / where the result lands / how to interpret pass/fail" tuples are standing-fact and belong in the consuming repo's test harness — when the consumer adds a ROM, they update *their* harness, not this skill. The checklists' "Test-ROM correspondence" sections route review-triggers to ROM names; identity lookup is a search against the canonical sources at the bottom of this file.
+Per-ROM identity (what each ROM tests, where it writes results, how to interpret pass/fail) lives in the upstream archives — follow the canonical-source pointers at the bottom of this file. The checklists' "Test-ROM correspondence" sections route review-triggers to ROM names; identity lookup is a search against those upstream archives.
 
 **What survives here:** the *meta*-rule that some hardware behaviours have **no canonical test ROM** at all. These are the gaps reviewers should not expect coverage for — flag explicitly when a finding falls into one of these holes.
 

@@ -1,7 +1,5 @@
 # NES Citations (RP2A03 / 2A07, RP2C02 / 2C07)
 
-Standing-fact tables (clock dividers, opcode tables, register decoded behaviour, memory maps, rate tables) have been evicted from this file — they belong next to the consuming repo's code (`CONTEXT.md`, `docs/`, or per-component reference) where they can be kept current with that codebase. Cite the canonical sources below directly from checklists.
-
 Cite **nesdev wiki** (`wiki.nesdev.org`) as canonical for every behaviour. Manufacturer datasheets are *not* authoritative.
 
 ---

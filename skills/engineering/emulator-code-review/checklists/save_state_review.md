@@ -14,7 +14,7 @@ Out of scope: **compression and format choice**. Like audio resampling, those ar
 
 ---
 
-## 1. Save-during-execution hazard (relocated from `checklists/cycle_accuracy.md`)
+## 1. Save-during-execution hazard
 
 Save-state captured while a component is mid-step is the single most-shipped class of save-state bug. Catch-up scheduler architectures surface it most often, but it is broader than one architecture — any save hook that fires from inside a component's step function has it.
 

@@ -163,7 +163,7 @@ The PPU is the densest quirk surface in the entire system. Apply rule 6 strictly
 
 ## 11. Test-ROM correspondence (methodology rule 1)
 
-This section maps **review triggers → ROMs to re-run**. For ROM identity (what each ROM tests, result address, pass/fail interpretation) follow the canonical-source pointers in `references/test_roms.md` to the upstream archive — identity rows do not live in this skill.
+This section maps **review triggers → ROMs to re-run**. For ROM identity (what each ROM tests, result address, pass/fail interpretation) follow the canonical-source pointers in `references/test_roms.md` to the upstream archive.
 
 | Change touches... | Re-run at minimum (NES) |
 |---|---|

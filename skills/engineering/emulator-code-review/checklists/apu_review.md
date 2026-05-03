@@ -195,7 +195,7 @@ The APU has the densest citation surface — almost every register has a quirk t
 
 ## 11. Test-ROM correspondence (methodology rule 1)
 
-This section maps **review triggers → ROMs to re-run**. For ROM identity follow the canonical-source pointers in `references/test_roms.md` to the upstream archive — identity rows do not live in this skill.
+This section maps **review triggers → ROMs to re-run**. For ROM identity follow the canonical-source pointers in `references/test_roms.md` to the upstream archive.
 
 | Change touches... | Re-run at minimum (NES) |
 |---|---|

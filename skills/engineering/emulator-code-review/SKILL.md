@@ -54,7 +54,7 @@ Always load the relevant **component checklist** for the file under review. Add 
 
 This skill is designed to run with **minimal context**: the code under review, the architecture as a one-line stated fact (e.g. "per-cycle state machine, mappers as vtable"), and the review scope (files or PR). Do **not** pass the implementation conversation that produced the code — it anchors the reviewer on the author's framing and degrades the suspicion posture rules 1 ("suspect elegance") and 3 ("read for missing behaviour") require. Do **not** pass the author's self-assessment of risk ("I'm worried about IRQ timing") — route focused review via the relevant checklist instead. Prefer sub-agent invocation with a fresh context window over in-context invocation in the session that wrote the code.
 
-Two consequences future contributors should *not* try to "fix":
+Two consequences of fresh-context invocation:
 
 - **Expect a higher false-positive rate on intentional-but-undocumented omissions.** A fresh reviewer will flag a missing undocumented opcode that the author deliberately skipped because the target ROM set doesn't use it. The fix is citation discipline (rule 6) — a code comment resolves the finding as "intentional, cited." Do not compensate by feeding more context to the reviewer.
 - **Confidence ratings (below) are meaningful only under fresh-context invocation.** A reviewer whose priors were shaped by the implementation conversation isn't producing an independent estimate. In-context invocation silently invalidates the confidence field.

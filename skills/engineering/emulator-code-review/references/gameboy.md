@@ -1,7 +1,5 @@
 # Game Boy Citations (DMG / MGB / SGB / SGB2 / CGB / AGB)
 
-Standing-fact tables (model registers, mode timing, OAM bug specifics, MBC behaviour, double-speed details, SGB packets) have been evicted from this file — they belong next to the consuming repo's code (`CONTEXT.md`, `docs/`, or per-component reference) where they can be kept current with that codebase. Cite the canonical sources below directly from checklists.
-
 Cite **pandocs** (`gbdev.io/pandocs`), **mooneye-gb** test ROMs, and the **AntonioND/giibiiadvance** documentation pack as canonical. Manufacturer (Sharp / Nintendo) datasheets are *not* authoritative.
 
 ---

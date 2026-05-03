@@ -42,7 +42,7 @@ Branch instructions with `if (taken && page_cross) { state = T5 } else { state =
 Per-cycle architectures *always* have implicit state — the current opcode's T-state index, partial register reads, address-bus latch. Per-cycle is the architecture *most* prone to incomplete save-states because the implicit state is structurally everywhere. Cross-reference each component's `_review.md` §5.
 
 **Performance bait: switch-on-state vs jump-table.**
-Reviewer-irrelevant under SKILL.md anti-features (no rewrite-faster suggestions). Note for cycle-accuracy review: a state machine that compiles to a tight labelled switch is correct *and* fast; do not push toward function-per-state.
+A state machine that compiles to a tight labelled switch is correct *and* fast — do not push toward function-per-state for performance reasons.
 
 ---
 

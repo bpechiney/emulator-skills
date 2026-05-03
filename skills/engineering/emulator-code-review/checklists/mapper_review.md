@@ -229,7 +229,7 @@ Uncited mapper code is the bug. Mapper documentation is the densest external dep
 
 ## 10. Test-ROM correspondence (methodology rule 1)
 
-This section maps **review triggers → ROMs to re-run**. For ROM identity follow the canonical-source pointers in `references/test_roms.md` to the upstream archive — identity rows do not live in this skill.
+This section maps **review triggers → ROMs to re-run**. For ROM identity follow the canonical-source pointers in `references/test_roms.md` to the upstream archive.
 
 | Change touches... | Re-run at minimum (NES) |
 |---|---|

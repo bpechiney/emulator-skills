@@ -138,7 +138,7 @@ When you encounter quirky CPU code:
 
 ## 10. Test-ROM correspondence (methodology rule 1)
 
-This section maps **review triggers → ROMs to re-run**. For ROM identity (what each ROM exercises, where it writes its result, how to interpret pass/fail codes) follow the canonical-source pointers in `references/test_roms.md` to the upstream archive (Blargg / mooneye-gb / peter_lemon) — identity rows do not live in this skill.
+This section maps **review triggers → ROMs to re-run**. For ROM identity (what each ROM exercises, where it writes its result, how to interpret pass/fail codes) follow the canonical-source pointers in `references/test_roms.md` to the upstream archive (Blargg / mooneye-gb / peter_lemon).
 
 When reviewing a CPU change, ask: **which test ROM does this affect?** If the answer is "I don't know", that's the first thing to find out. Suggested mapping for NES:
 
