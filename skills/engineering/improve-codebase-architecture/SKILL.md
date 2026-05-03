@@ -5,6 +5,8 @@ description: Find deepening opportunities in a codebase, informed by the domain 
 
 # Improve Codebase Architecture
 
+> For emulator/cycle-accurate work, also consult `/emudev` — it names the six load-bearing decisions (dispatch, polymorphism, cycle-accuracy tier, save-state schema, CPU↔Bus boundary, fidelity scope) that should already be ADRs before deepening passes.
+
 Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
 
 ## Glossary

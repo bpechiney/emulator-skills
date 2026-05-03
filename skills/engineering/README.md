@@ -1,7 +1,8 @@
 # Engineering
 
-Skills I use daily for code work.
+Skills used daily for code work.
 
+- **[emudev](./emudev/SKILL.md)** — Coding standards for cycle-accurate retro console emulators (Game Boy, NES, SNES) in Zig 0.16. Standing rules, six load-bearing decisions for `/grill-with-docs`, per-system references.
 - **[diagnose](./diagnose/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
 - **[grill-with-docs](./grill-with-docs/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `CONTEXT.md` and ADRs inline.
 - **[triage](./triage/SKILL.md)** — Triage issues through a state machine of triage roles.
