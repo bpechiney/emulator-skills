@@ -4,34 +4,21 @@ Modeling hardware registers (LCDC, STAT, NR-series APU regs, PPUCTRL, etc.) with
 
 ## The pattern
 
-A hardware register is a fixed-width byte (or 16-bit word) where each bit (or bit range) has a named semantic. Model it as a `packed struct` with explicit bit-width fields, sized to match the underlying width.
-
-Game Boy LCDC ($FF40):
+A hardware register is a fixed-width byte (or 16-bit word) where each bit (or bit range) has a named semantic. Model it as a `packed struct` with explicit bit-width fields, sized to match the underlying width:
 
 ```zig
-// REF: pandocs/lcdc.html
-pub const Lcdc = packed struct(u8) {
-    bg_window_priority: bool, // bit 0: BG/window enable (DMG) / BG-OBJ priority (CGB)
-    obj_enable:         bool, // bit 1
-    obj_size:           ObjSize, // bit 2: 0 = 8x8, 1 = 8x16
-    bg_tile_map:        TileMap, // bit 3: 0 = $9800-$9BFF, 1 = $9C00-$9FFF
-    bg_window_tile_data: TileData, // bit 4
-    window_enable:      bool, // bit 5
-    window_tile_map:    TileMap, // bit 6
-    lcd_enable:         bool, // bit 7
-
-    pub const ObjSize = enum(u1) { eight_by_eight, eight_by_sixteen };
-    pub const TileMap = enum(u1) { @"9800", @"9c00" };
-    pub const TileData = enum(u1) { @"8800_signed", @"8000_unsigned" };
+// REF: <hardware doc anchor for this register>
+pub const SomeReg = packed struct(u8) {
+    flag_a: bool, // bit 0
+    mode:   Mode, // bits 1-2
+    // ... remaining bits ...
+    enable: bool, // bit 7
 };
 
-comptime {
-    std.debug.assert(@sizeOf(Lcdc) == 1);
-    std.debug.assert(@bitSizeOf(Lcdc) == 8);
-}
+comptime { std.debug.assert(@bitSizeOf(SomeReg) == 8); }
 ```
 
-Note `packed struct(u8)` — the explicit backing type. This makes `@bitCast` to/from `u8` zero-cost and well-defined.
+Note `packed struct(u8)` — the explicit backing type. This makes `@bitCast` to/from `u8` zero-cost and well-defined. Per-bit-width nested enums (`enum(u1)`, `enum(u2)`) are the right shape for multi-bit semantic fields.
 
 ## Reading and writing through the bus
 
@@ -40,73 +27,58 @@ The bus exposes register I/O as `u8` reads and writes. Convert at the boundary u
 ```zig
 pub fn busRead(self: *Ppu, addr: u16) u8 {
     return switch (addr) {
-        0xFF40 => @bitCast(self.lcdc),
-        0xFF41 => @bitCast(self.stat),
+        REG_A_ADDR => @bitCast(self.reg_a),
         // ...
     };
 }
 
 pub fn busWrite(self: *Ppu, addr: u16, val: u8) void {
     switch (addr) {
-        0xFF40 => self.writeLcdc(@bitCast(val)),
-        0xFF41 => self.writeStat(@bitCast(val)),
+        REG_A_ADDR => self.writeRegA(@bitCast(val)),
         // ...
     }
 }
-
-fn writeLcdc(self: *Ppu, new: Lcdc) void {
-    // QUIRK: turning LCD off mid-frame resets the LY counter and the
-    // mode flags. The first frame after re-enable has different timing.
-    // REF: pandocs/lcdc.html#bit-7-lcd-and-ppu-enable-bit
-    if (self.lcdc.lcd_enable and !new.lcd_enable) {
-        self.ly = 0;
-        self.stat.mode = .hblank;
-    }
-    self.lcdc = new;
-}
 ```
 
-Centralizing the `@bitCast` at the bus boundary keeps the rest of the code reading typed fields. `self.lcdc.window_enable` is clearer than `(reg >> 5) & 1`.
+Centralizing the `@bitCast` at the bus boundary keeps the rest of the code reading typed fields (`self.reg_a.enable` is clearer than `(reg >> 7) & 1`). Quirky write-side effects (e.g., resetting derived state when a flag transitions) live in the dedicated `writeXxx` function, not inline in the bus dispatch.
 
 ## Bit-order gotchas
 
 Zig packs `packed struct` fields starting from the least significant bit. **Always declare fields bit-0 first**, even when the hardware doc lists them bit-7 first.
 
-If you copy a hardware doc table top-down, you'll get the order reversed. Verify with a `comptime` assertion:
+If you copy a hardware doc table top-down, you'll get the order reversed. Verify with a `comptime` assertion that a known-bit-pattern decodes correctly:
 
 ```zig
 comptime {
-    // LCDC bit 7 is lcd_enable per pandocs.
-    var x: Lcdc = @bitCast(@as(u8, 0x80));
-    std.debug.assert(x.lcd_enable);
-    std.debug.assert(!x.bg_window_priority);
+    var x: SomeReg = @bitCast(@as(u8, 0b1000_0000));
+    std.debug.assert(x.enable);   // bit 7 should be the enable flag
+    std.debug.assert(!x.flag_a);  // bit 0 should be clear
 }
 ```
 
 Bake one of these per register so future-you can't misread the bit order silently.
 
-## Read-only / write-only / mixed registers
+## Read-only / write-only / read-with-side-effects
 
-Some hardware registers have asymmetric read/write semantics — e.g., NES PPUSTATUS ($2002) reads return status bits but writes are ignored; PPUDATA ($2007) reads have one-byte buffering except in the palette range.
-
-Model the *storage* with a packed struct; encode the asymmetry in the read/write functions, **not** in the struct type. A register isn't "read-only at the type level" — it's read-only at the bus boundary, which is where the asymmetry is enforced.
+Some hardware registers have asymmetric read/write semantics, or reads with side effects (e.g., a status read that clears a latch). Model the *storage* with a packed struct; encode the asymmetry in the bus-boundary functions, **not** in the struct type:
 
 ```zig
 pub fn busRead(self: *Ppu, addr: u16) u8 {
     return switch (addr) {
-        0x2002 => blk: {
-            // QUIRK: PPUSTATUS read clears bit 7 (vblank) and resets
-            // the $2005/$2006 write toggle.
-            // REF: nesdev/PPU_registers.html
+        STATUS_ADDR => blk: {
+            // QUIRK: reading clears <bit> and resets <latch>.
+            // REF: <doc anchor>
             const out: u8 = @bitCast(self.status);
-            self.status.vblank = false;
-            self.write_toggle = false;
+            self.status.<bit> = false;
+            self.<latch> = .reset;
             break :blk out;
         },
         // ...
     };
 }
 ```
+
+A register isn't "read-only at the type level" — it's read-only at the bus boundary, which is where the asymmetry is enforced.
 
 ## `@bitCast` alignment traps
 

@@ -74,35 +74,36 @@ Tests are first-class build steps. The standard shape:
     });
     test_rom_runner.root_module.addImport("core", core_mod);
 
-    const blargg_step = b.addRunArtifact(test_rom_runner);
-    blargg_step.addArg("--suite");
-    blargg_step.addArg("blargg");
-    blargg_step.addArg("--timeout-cycles");
-    blargg_step.addArg("400000000");
-    test_step.dependOn(&blargg_step.step);
+    // One addRunArtifact per test-ROM suite, each with its own
+    // --suite and --timeout-cycles args (per-suite budget set by
+    // the consuming repo, not the skill).
+    const suite_step = b.addRunArtifact(test_rom_runner);
+    suite_step.addArg("--suite");
+    suite_step.addArg("<suite-name>");
+    test_step.dependOn(&suite_step.step);
 ```
 
-`test_rom_runner` is a Zig program that loads test ROMs, runs them through the core, and exits non-zero on failure. Each suite is a separate `addRunArtifact` step under `test_step` — a single `zig build test` runs unit tests + every test-ROM suite.
+`test_rom_runner` is a Zig program that loads test ROMs, runs them through the core, and exits non-zero on failure. A single `zig build test` runs unit tests plus every wired suite.
 
 ## Feature flags
 
-Use `b.addOptions()` and `addImport("build_options", ...)` for compile-time feature flags:
+Use `b.addOptions()` and `addImport("build_options", ...)` for compile-time feature flags. The pattern:
 
 ```zig
     const opts = b.addOptions();
-    const fidelity_scope = b.option(
+    const my_flag = b.option(
         []const u8,
-        "fidelity-scope",
-        "Fidelity scope: 'dmg-only', 'dmg-cgb', or 'all-six'. Default: 'dmg-cgb'.",
-    ) orelse "dmg-cgb";
-    opts.addOption([]const u8, "fidelity_scope", fidelity_scope);
+        "my-flag",
+        "Description.",
+    ) orelse "default";
+    opts.addOption([]const u8, "my_flag", my_flag);
 
     core_mod.addImport("build_options", opts.createModule());
 ```
 
-Code reads `@import("build_options").fidelity_scope` and switches on it at compile time. This is the typical mechanism for decision #6 when revision gating is compile-time. Run with `zig build -Dfidelity-scope=dmg-only`.
+Code reads `@import("build_options").my_flag` and `switch`es on it at compile time. Run with `zig build -Dmy-flag=value`.
 
-For runtime gating (e.g., the user picks the revision via CLI flag), don't use `b.addOptions` — use a regular field on the console struct.
+This is the typical mechanism for **compile-time** gating of decision #6 (fidelity scope). For runtime gating — where the user picks the revision via CLI flag — don't use `b.addOptions`; use a field on the console struct.
 
 ## Build modes
 

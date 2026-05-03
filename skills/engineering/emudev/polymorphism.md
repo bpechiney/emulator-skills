@@ -19,11 +19,9 @@ For mappers, the tagged union with `inline else` lets the compiler specialize th
 
 ```zig
 pub const Mapper = union(enum) {
+    // One variant per supported mapper. Each variant struct
+    // implements read/write (and any mapper-specific hooks).
     rom_only: RomOnly,
-    mbc1: Mbc1,
-    mbc3: Mbc3,
-    mbc5: Mbc5,
-    huc1: Huc1,
     // ...
 
     pub fn read(self: *Mapper, addr: u16) u8 {
@@ -31,12 +29,7 @@ pub const Mapper = union(enum) {
             inline else => |*m| return m.read(addr),
         }
     }
-
-    pub fn write(self: *Mapper, addr: u16, val: u8) void {
-        switch (self.*) {
-            inline else => |*m| m.write(addr, val),
-        }
-    }
+    // pub fn write similarly.
 };
 ```
 
@@ -51,33 +44,16 @@ The CPU is parameterized over the bus type at compile time. There's typically on
 ```zig
 pub fn Cpu(comptime Bus: type) type {
     return struct {
-        const Self = @This();
+        // ... CPU state (PC, SP, register file, flags) ...
 
-        pc: u16,
-        sp: u16,
-        a: u8,
-        bc: u16,
-        de: u16,
-        hl: u16,
-        flags: Flags,
-
-        // Half-register accessors (cpu.b(), cpu.c(), cpu.h(), cpu.l(), ...)
-        // elided. Pair storage matches the SM83 instructions that act on BC,
-        // DE, HL as 16-bit operands; halves are computed via @truncate /
-        // @as(u16, x) << 8.
-
-        pub fn step(self: *Self, bus: *Bus) void {
+        pub fn step(self: *@This(), bus: *Bus) void {
             const op = bus.read(self.pc);
             // ... dispatch ...
         }
     };
 }
 
-// Usage:
-const Console = struct {
-    bus: Bus,
-    cpu: Cpu(Bus),
-};
+// Usage: cpu: Cpu(MyBus) and pass a &my_bus into step.
 ```
 
 Trade-off: testability. With `comptime Bus`, mocking the bus means defining a `MockBus` type with the same surface. That's slightly more friction than passing a vtable, but the duck-typing structural check Zig performs is enough for tests — `MockBus` doesn't need a formal interface declaration.
@@ -94,41 +70,18 @@ pub const Renderer = struct {
     vtable: *const Vtable,
 
     pub const Vtable = struct {
-        present: *const fn (ctx: *anyopaque, framebuffer: []const u32) void,
+        present: *const fn (ctx: *anyopaque, fb: []const u32) void,
         deinit: *const fn (ctx: *anyopaque) void,
     };
 
-    pub fn present(self: Renderer, framebuffer: []const u32) void {
-        self.vtable.present(self.ctx, framebuffer);
+    pub fn present(self: Renderer, fb: []const u32) void {
+        self.vtable.present(self.ctx, fb);
     }
-
-    pub fn deinit(self: Renderer) void {
-        self.vtable.deinit(self.ctx);
-    }
-};
-
-pub const RaylibRenderer = struct {
-    // ... raylib-specific state ...
-
-    pub fn renderer(self: *RaylibRenderer) Renderer {
-        return .{ .ctx = self, .vtable = &vtable };
-    }
-
-    const vtable: Renderer.Vtable = .{
-        .present = present,
-        .deinit = deinit,
-    };
-
-    fn present(ctx: *anyopaque, fb: []const u32) void {
-        const self: *RaylibRenderer = @ptrCast(@alignCast(ctx));
-        // ... draw ...
-    }
-    fn deinit(ctx: *anyopaque) void {
-        const self: *RaylibRenderer = @ptrCast(@alignCast(ctx));
-        // ... clean up ...
-    }
+    // pub fn deinit similarly.
 };
 ```
+
+Each concrete renderer (raylib, SDL, TUI, headless trace dumper, ...) provides a `fn renderer(self: *Self) Renderer` that supplies its `ctx` + a static `Vtable` whose function pointers `@ptrCast(@alignCast(ctx))` back to `*Self`.
 
 Vtables aren't on the hot path (per-frame `present` calls are cheap), so the indirection is fine.
 
