@@ -1,0 +1,99 @@
+---
+name: emudev
+description: Coding standards for cycle-accurate retro console emulators (Game Boy, NES, SNES) in Zig 0.16. Use when working under cpu/, ppu/, apu/, cart/, mappers/, bus/, or when the user mentions opcodes, addressing modes, T-states, M-cycles, scanlines, vblank/hblank, mappers, MBCs, IRQs, NMIs, OAM, DMC, frame counters, save-state schemas, or test ROMs. Loads standing rules and references/<system>/ for the system configured in docs/agents/emudev.md.
+---
+
+# Emudev
+
+Coding standards for cycle-accurate retro console emulators (Game Boy, NES, SNES) in Zig 0.16.
+
+## At session start
+
+1. Read `docs/agents/emudev.md` to find the active `system` (`gameboy`, `nes`, `snes`) and other config (cycle-accuracy tier, `Hacks` location, test-ROM root).
+2. If the file is missing, run the lazy-creation interview from [setup.md](./setup.md). It is idempotent — re-running on an existing config edits in place rather than overwriting.
+3. Verify Zig version. Read `build.zig.zon`'s `minimum_zig_version`. If it isn't `0.16.x`, surface a one-line warning at session start and proceed using 0.16 conventions.
+4. Load `references/<system>/` for the active system on demand. The files are named, not exhaustive — load only what's relevant to the work in front of you.
+
+## Standing rules
+
+These are non-negotiable across every emudev repo. They are the part of this skill that should not be argued with mid-implementation.
+
+### 1. Six-tag citation taxonomy
+
+Every function or block whose existence is hardware-derived carries at least one tag. The six tags: `REF`, `QUIRK`, `HW`, `TEST`, `HACK`, `TODO`. Full taxonomy, examples, and grep recipes live in [comments.md](./comments.md).
+
+The proximity rule is **per-function-or-block**, not per-N-lines. Mechanical regions (long opcode tables) need one tag at the top, not one per ten lines.
+
+### 2. `HACK` requires three things
+
+A `// HACK[Game] (#issue): ...` is only valid if it carries:
+
+1. Bracketed game or test name — what real-world thing forced this.
+2. Linked issue — tracking the removal target.
+3. Stated hardware uncertainty — what we don't yet know that justifies the imperfection.
+
+If any of the three is missing, **it isn't a HACK — it's bad code**. Delete it instead of tagging it.
+
+### 3. `TODO` requires linked issue
+
+Every `// TODO(#N): ...` carries a linked issue. No floating TODOs.
+
+### 4. No allocations in the hot path
+
+The CPU dispatch loop, PPU pixel pipeline, and APU sample generator do not allocate. Pre-allocate at boot; pass allocators only into setup paths and frontend boundaries.
+
+### 5. Typed `Hacks` namespace from day one
+
+Every emudev repo has a typed `Hacks` namespace (bsnes/ares prior art, not Snes9x-style untyped). Location declared in `docs/agents/emudev.md`. Every active hack is named there with a removal target. Inline `HACK[Game]` tags at use sites are the breadcrumbs; the namespace is the catalog.
+
+## Six decisions worth grilling
+
+Before implementing a new emulator (or a major subsystem), invoke `/grill-with-docs` to walk these candidates. Each typically passes the three-test (hard-to-reverse + surprising + real-trade-off) — `grill-with-docs` decides whether each warrants an ADR for *this* repo.
+
+1. **Dispatch strategy** — labeled `switch` with `continue :state .next_op` (the Zig 0.16 idiom; +13% on Zig's own tokenizer; observed in 0/12 surveyed Zig emulators) vs function-pointer table vs giant `switch`. See [dispatch.md](./dispatch.md).
+
+2. **Mapper polymorphism** — tagged `union(enum)` with `inline else` (closed historical sets — NES has ~250 mappers but it's a closed set) vs vtable (open frontends) vs hybrid. See [polymorphism.md](./polymorphism.md).
+
+3. **Cycle accuracy tier** — instruction-stepped vs M-cycle vs T-state. Hard to upgrade later (changing tier rewrites the CPU loop). See [`references/shared/cycle-accuracy-tiers.md`](./references/shared/cycle-accuracy-tiers.md).
+
+4. **Save-state schema versioning + migration** — explicit version + migration ladder vs schema-as-code (compile-time snapshot of the state struct) vs deferred. Bumping a version without a migration breaks every user save. See [testing.md](./testing.md).
+
+5. **CPU↔Bus boundary** — `comptime Bus: type` (monomorphized per concrete bus type) vs vtable (runtime swap). Touches every instruction call — easier to commit early than to refactor later.
+
+6. **Fidelity scope + gating mechanism** — which hardware revisions, regions, peripherals/accessories, boot ROMs, and analog characteristics this emulator faithfully reproduces, and how scope-dependent paths are gated (compile-time `comptime` vs runtime field). Per-system candidates in `references/<system>/fidelity-scope-candidates.md`. Entangled with #4 (save-state must encode the active revision) and #2 (revision gating may reuse the tagged-union pattern from mapper polymorphism).
+
+Note: "fidelity scope" (the ADR-level scope choice) is distinct from `QUIRK` (the inline tag for universal hardware quirks the cycle-accuracy tier dictates you reproduce regardless). See [comments.md](./comments.md) for the naming hygiene.
+
+## Composition with sibling skills
+
+Emudev defers loops and processes to sibling skills. It contributes domain content; it does not parallel their orchestration.
+
+- **`/tdd`** drives the red-green-refactor loop. Emudev provides *what to test against* (test ROMs, golden traces, determinism, save-state round-trip — see [testing.md](./testing.md)) and *how to write the implementation* (citations, dispatch, packed structs).
+- **`/grill-with-docs`** walks the six load-bearing decisions above. Emudev does not write ADRs directly.
+- **`/to-issues`** slices implementation work into vertical tracer-bullet issues. Emudev does not parallel its slicing logic.
+- **`/diagnose`** runs the hardware-quirk debugging loop. Emulator dev is bug-hunt-heavy; `/diagnose` is the daily driver.
+- **`/improve-codebase-architecture`** reads ADRs produced via `/grill-with-docs`. No direct integration.
+- **`/triage`** suggested labels for emulator work: `cycle-accuracy`, `mapper-compat`, `test-rom-failing`, `hack-debt`, `cite-needed`. Configure in `docs/agents/triage-labels.md` per `/setup-matt-pocock-skills`.
+
+`/tdd`, `/diagnose`, and `/improve-codebase-architecture` carry one-line cross-references to `/emudev` so the agent picks up domain context when triggered by the sibling skill.
+
+## Zig version
+
+This skill assumes **Zig 0.16** (released 2026-04-13). All code samples target 0.16. When Zig 0.17 ships and you migrate a repo, bump this skill in lockstep with the repos.
+
+If `build.zig.zon`'s `minimum_zig_version` is not `0.16.x`, surface a one-line warning at session start. Proceed using 0.16 conventions; do not attempt to adapt code samples to other versions.
+
+## File index
+
+| File | Use when |
+|---|---|
+| [comments.md](./comments.md) | Adding inline citations, writing or reviewing comments |
+| [dispatch.md](./dispatch.md) | Implementing CPU opcode dispatch |
+| [polymorphism.md](./polymorphism.md) | Implementing mapper variants or any closed-set polymorphism |
+| [packed-structs.md](./packed-structs.md) | Modeling hardware registers (LCDC/STAT/OAM-equivalents) |
+| [testing.md](./testing.md) | Wiring test ROMs, determinism tests, save-state round-trip |
+| [build.md](./build.md) | Editing `build.zig` (artifact split, feature flags, test wiring) |
+| [setup.md](./setup.md) | First emudev invocation in a fresh repo |
+| `references/shared/citation-prefixes.md` | Choosing a citation form |
+| `references/shared/cycle-accuracy-tiers.md` | Comparing instruction / M-cycle / T-state tiers |
+| `references/<system>/` | System-specific references (codenames, test-ROM wiring, fidelity-scope candidates) |

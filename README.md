@@ -1,172 +1,117 @@
-<p>
-  <a href="https://www.aihero.dev/s/skills-newsletter">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://res.cloudinary.com/total-typescript/image/upload/v1777382277/skills-repo-dark_2x.png">
-      <source media="(prefers-color-scheme: light)" srcset="https://res.cloudinary.com/total-typescript/image/upload/v1777382277/skill-repo-light_2x.png">
-      <img alt="Skills" src="https://res.cloudinary.com/total-typescript/image/upload/v1777382277/skill-repo-light_2x.png" width="369">
-    </picture>
-  </a>
-</p>
+# Emudev Skills
 
-# Skills For Real Engineers
+Agent skills for building cycle-accurate retro console emulators (Game Boy, NES, SNES) in Zig 0.16.
 
-My agent skills that I use every day to do real engineering - not vibe coding.
+A specialized fork of [mattpocock/skills](https://github.com/mattpocock/skills). The signature skill is **[`/emudev`](./skills/engineering/emudev/SKILL.md)** — coding standards, citation discipline, and per-system references for cycle-accurate emulator work. The remaining skills (TDD, grilling, diagnosis, issue management) compose with `/emudev` and are kept largely as-is from upstream.
 
-Developing real applications is hard. Approaches like GSD, BMAD, and Spec-Kit try to help by owning the process. But while doing so, they take away your control and make bugs in the process hard to resolve.
+## Quickstart
 
-These skills are designed to be small, easy to adapt, and composable. They work with any model. They're based on decades of engineering experience. Hack around with them. Make them your own. Enjoy.
-
-If you want to keep up with changes to these skills, and any new ones I create, you can join ~60,000 other devs on my newsletter:
-
-[Sign Up To The Newsletter](https://www.aihero.dev/s/skills-newsletter)
-
-## Quickstart (30-second setup)
-
-1. Run the skills.sh installer:
+1. Install:
 
 ```bash
-npx skills@latest add mattpocock/skills
+npx skills@latest add bpechiney/emulator-skills
 ```
 
-2. Pick the skills you want, and which coding agents you want to install them on. **Make sure you select `/setup-matt-pocock-skills`**.
+2. In your emulator repo, run `/setup-matt-pocock-skills` once. This scaffolds `docs/agents/{issue-tracker,triage-labels,domain}.md` and adds an `## Agent skills` block to `AGENTS.md`/`CLAUDE.md`.
 
-3. Run `/setup-matt-pocock-skills` in your agent. It will:
-   - Ask you which issue tracker you want to use (GitHub, Linear, or local files)
-   - Ask you what labels you apply to ticks when you triage them (`/triage` uses labels)
-   - Ask you where you want to save any docs we create
+3. Then run `/emudev` (or trigger it by editing emulator code). On first invocation in a repo it lazily creates `docs/agents/emudev.md` via a short interview (system, cycle-accuracy tier, test-ROM root, `Hacks` location, Zig version) and amends the `## Agent skills` block.
 
-4. Bam - you're ready to go.
+## Why emulator dev needs its own skills
 
-## Why These Skills Exist
+Cycle-accurate emulator code has failure modes generic engineering skills don't cover:
 
-I built these skills as a way to fix common failure modes I see with Claude Code, Codex, and other coding agents.
+- **Citation discipline** — every hardware-derived code path needs a citation, or it's unreviewable. Generic Zig culture treats comments as a code smell; emulator code inverts this.
+- **Hardware-quirk fidelity** — the HALT bug, sprite-0 timing, mode-3 length variance, OAM corruption-on-$2003-write, mid-frame palette writes, DMC sample-stealing CPU stalls. Each is a `QUIRK` tag with a citation; together they're the difference between a toy and a Tetris-runs-correctly emulator.
+- **Test-ROM compliance** — Blargg, Mooneye, mealybug-tearoom, nestest, Tom Harte JSON tests. The "did I implement opcode 0x76 correctly" question has a deterministic answer, and the emulator's build pipeline must integrate that signal.
+- **Hack-debt management** — bsnes/ares typed `Hacks` namespace from day one, not Snes9x-style untyped accumulation. A `HACK` tag without a game name, linked issue, and stated hardware uncertainty isn't a hack — it's bad code.
+- **Save-state schema versioning** — bumping a version without a migration breaks every user's save file. Decide migration discipline before shipping, not after.
+- **Fidelity scope** — DMG-only or DMG+CGB or all six revisions? NTSC-only or NTSC+PAL? 1-CHIP or 2/1/3-CHIP SNES PPU? Choose deliberately; gate revision-dependent paths.
 
-### #1: The Agent Didn't Do What I Want
+The `/emudev` skill encodes these as standing rules and surfaces six load-bearing decisions (dispatch strategy, mapper polymorphism, cycle-accuracy tier, save-state versioning, CPU↔Bus boundary, fidelity scope) for `/grill-with-docs` to walk before implementation.
+
+## Why these skills exist (carried over from upstream)
+
+The fundamentals below apply to any non-trivial codebase, including emulators. Most of this section is preserved from mattpocock/skills with minor framing updates.
+
+### #1: The agent didn't do what I want
 
 > "No-one knows exactly what they want"
 >
 > David Thomas & Andrew Hunt, [The Pragmatic Programmer](https://www.amazon.co.uk/Pragmatic-Programmer-Anniversary-Journey-Mastery/dp/B0833F1T3V)
 
-**The Problem**. The most common failure mode in software development is misalignment. You think the dev knows what you want. Then you see what they've built - and you realize it didn't understand you at all.
+The most common failure mode is misalignment. The fix is a **grilling session**:
 
-This is just the same in the AI age. There is a communication gap between you and the agent. The fix for this is a **grilling session** - getting the agent to ask you detailed questions about what you're building.
+- [`/grill-me`](./skills/productivity/grill-me/SKILL.md) — for non-code uses
+- [`/grill-with-docs`](./skills/engineering/grill-with-docs/SKILL.md) — same, but updates `CONTEXT.md` and ADRs inline
 
-**The Fix** is to use:
+Use them every time you start a new feature. For emulator work, run `/grill-with-docs` against each of the six load-bearing decisions named in `/emudev`.
 
-- [`/grill-me`](./skills/productivity/grill-me/SKILL.md) - for non-code uses
-- [`/grill-with-docs`](./skills/engineering/grill-with-docs/SKILL.md) - same as [`/grill-me`](./skills/productivity/grill-me/SKILL.md), but adds more goodies (see below)
-
-These are my most popular skills. They help you align with the agent before you get started, and think deeply about the change you're making. Use them _every_ time you want to make a change.
-
-### #2: The Agent Is Way Too Verbose
+### #2: The agent is way too verbose
 
 > With a ubiquitous language, conversations among developers and expressions of the code are all derived from the same domain model.
 >
-> Eric Evans, [Domain-Driven-Design](https://www.amazon.co.uk/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215)
+> Eric Evans, [Domain-Driven Design](https://www.amazon.co.uk/Domain-Driven-Design-Tackling-Complexity-Software/dp/0321125215)
 
-**The Problem**: At the start of a project, devs and the people they're building the software for (the domain experts) are usually speaking different languages.
+A shared `CONTEXT.md` decodes domain jargon. Built into [`/grill-with-docs`](./skills/engineering/grill-with-docs/SKILL.md). Emulator domains are jargon-heavy (cycles, scanlines, mappers, T-states, hblank, vblank, OAM) — `CONTEXT.md` is essential, not optional.
 
-I felt the same tension with my agents. Agents are usually dropped into a project and asked to figure out the jargon as they go. So they use 20 words where 1 will do.
+### #3: The code doesn't work
 
-**The Fix** for this is a shared language. It's a document that helps agents decode the jargon used in the project.
-
-<details>
-<summary>
-Example
-</summary>
-
-Here's an example [`CONTEXT.md`](https://github.com/mattpocock/course-video-manager/blob/076a5a7a182db0fe1e62971dd7a68bcadf010f1c/CONTEXT.md), from my `course-video-manager` repo. Which one is easier to read?
-
-- **BEFORE**: "There's a problem when a lesson inside a section of a course is made 'real' (i.e. given a spot in the file system)"
-- **AFTER**: "There's a problem with the materialization cascade"
-
-This concision pays off session after session.
-
-</details>
-
-This is built into [`/grill-with-docs`](./skills/engineering/grill-with-docs/SKILL.md). It's a grilling session, but that helps you build a shared language with the AI, and document hard-to-explain decisions in ADR's.
-
-It's hard to explain how powerful this is. It might be the single coolest technique in this repo. Try it, and see.
-
-> [!TIP]
-> A shared language has many other benefits than reducing verbosity:
+> "Always take small, deliberate steps. The rate of feedback is your speed limit."
 >
-> - **Variables, functions and files are named consistently**, using the shared language
-> - As a result, the **codebase is easier to navigate** for the agent
-> - The agent also **spends fewer tokens on thinking**, because it has access to a more concise language
+> David Thomas & Andrew Hunt, *The Pragmatic Programmer*
 
-### #3: The Code Doesn't Work
+Use:
 
-> "Always take small, deliberate steps. The rate of feedback is your speed limit. Never take on a task that’s too big."
->
-> David Thomas & Andrew Hunt, [The Pragmatic Programmer](https://www.amazon.co.uk/Pragmatic-Programmer-Anniversary-Journey-Mastery/dp/B0833F1T3V)
+- [`/tdd`](./skills/engineering/tdd/SKILL.md) — red-green-refactor with vertical slices. For emulator work, it consumes test ROMs as integration fixtures (see `/emudev`'s `testing.md`).
+- [`/diagnose`](./skills/engineering/diagnose/SKILL.md) — disciplined bug-hunt loop. Emulator dev is bug-hunt-heavy; `/diagnose` is your daily driver when "Pokémon Red hangs at the intro" turns up.
 
-**The Problem**: Let's say that you and the agent are aligned on what to build. What happens when the agent _still_ produces crap?
-
-It's time to look at your feedback loops. Without feedback on how the code it produces actually runs, the agent will be flying blind.
-
-**The Fix**: You need the usual tranche of feedback loops: static types, browser access, and automated tests.
-
-For automated tests, a red-green-refactor loop is critical. This is where the agent writes a failing test first, then fixes the test. This helps give the agent a consistent level of feedback that results in far better code.
-
-I've built a **[`/tdd`](./skills/engineering/tdd/SKILL.md) skill** you can slot into any project. It encourages red-green-refactor and gives the agent plenty of guidance on what makes good and bad tests.
-
-For debugging, I've also built a **[`/diagnose`](./skills/engineering/diagnose/SKILL.md)** skill that wraps best debugging practices into a simple loop.
-
-### #4: We Built A Ball Of Mud
-
-> "Invest in the design of the system _every day_."
->
-> Kent Beck, [Extreme Programming Explained](https://www.amazon.co.uk/Extreme-Programming-Explained-Embrace-Change/dp/0321278658)
+### #4: We built a ball of mud
 
 > "The best modules are deep. They allow a lot of functionality to be accessed through a simple interface."
 >
-> John Ousterhout, [A Philosophy Of Software Design](https://www.amazon.co.uk/Philosophy-Software-Design-2nd/dp/173210221X)
+> John Ousterhout, [A Philosophy of Software Design](https://www.amazon.co.uk/Philosophy-Software-Design-2nd/dp/173210221X)
 
-**The Problem**: Most apps built with agents are complex and hard to change. Because agents can radically speed up coding, they also accelerate software entropy. Codebases get more complex at an unprecedented rate.
+Use:
 
-**The Fix** for this is a radical new approach to AI-powered development: caring about the design of the code.
+- [`/to-prd`](./skills/engineering/to-prd/SKILL.md) — turns conversation context into a PRD
+- [`/zoom-out`](./skills/engineering/zoom-out/SKILL.md) — gives a module map for unfamiliar code
+- [`/improve-codebase-architecture`](./skills/engineering/improve-codebase-architecture/SKILL.md) — finds deepening opportunities, informed by `CONTEXT.md` and ADRs
 
-This is built in to every layer of these skills:
-
-- [`/to-prd`](./skills/engineering/to-prd/SKILL.md) quizzes you about which modules you're touching before creating a PRD
-- [`/zoom-out`](./skills/engineering/zoom-out/SKILL.md) tells the agent to explain code in the context of the whole system
-
-And crucially, [`/improve-codebase-architecture`](./skills/engineering/improve-codebase-architecture/SKILL.md) helps you rescue a codebase that has become a ball of mud. I recommend running it on your codebase once every few days.
-
-### Summary
-
-Software engineering fundamentals matter more than ever. These skills are my best effort at condensing these fundamentals into repeatable practices, to help you ship the best apps of your career. Enjoy.
-
-## Reference
+## Reference (active manifest)
 
 ### Engineering
 
-Skills I use daily for code work.
-
-- **[diagnose](./skills/engineering/diagnose/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
-- **[grill-with-docs](./skills/engineering/grill-with-docs/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `CONTEXT.md` and ADRs inline.
+- **[emudev](./skills/engineering/emudev/SKILL.md)** — Coding standards for cycle-accurate retro console emulators in Zig 0.16. Standing rules (six-tag citation taxonomy, no-alloc hot path, typed `Hacks`, `TODO`/`HACK` linked-issue), six load-bearing decisions for `/grill-with-docs`, and per-system references (`gameboy/`, `nes/`, `snes/`).
+- **[diagnose](./skills/engineering/diagnose/SKILL.md)** — Disciplined diagnosis loop: reproduce → minimise → hypothesise → instrument → fix → regression-test.
+- **[grill-with-docs](./skills/engineering/grill-with-docs/SKILL.md)** — Grilling session that challenges your plan against the existing domain model and updates `CONTEXT.md` / ADRs inline.
+- **[improve-codebase-architecture](./skills/engineering/improve-codebase-architecture/SKILL.md)** — Find deepening opportunities, informed by `CONTEXT.md` and `docs/adr/`.
+- **[setup-matt-pocock-skills](./skills/engineering/setup-matt-pocock-skills/SKILL.md)** — Scaffold the per-repo config (issue tracker, triage labels, domain doc layout). Run once per repo before the other skills.
+- **[tdd](./skills/engineering/tdd/SKILL.md)** — Test-driven development with red-green-refactor. Drives the loop emudev defers to.
+- **[to-issues](./skills/engineering/to-issues/SKILL.md)** — Break a plan / spec / PRD into independently-grabbable issues using vertical slices.
+- **[to-prd](./skills/engineering/to-prd/SKILL.md)** — Turn the current conversation context into a PRD on the issue tracker.
 - **[triage](./skills/engineering/triage/SKILL.md)** — Triage issues through a state machine of triage roles.
-- **[improve-codebase-architecture](./skills/engineering/improve-codebase-architecture/SKILL.md)** — Find deepening opportunities in a codebase, informed by the domain language in `CONTEXT.md` and the decisions in `docs/adr/`.
-- **[setup-matt-pocock-skills](./skills/engineering/setup-matt-pocock-skills/SKILL.md)** — Scaffold the per-repo config (issue tracker, triage label vocabulary, domain doc layout) that the other engineering skills consume. Run once per repo before using `to-issues`, `to-prd`, `triage`, `diagnose`, `tdd`, `improve-codebase-architecture`, or `zoom-out`.
-- **[tdd](./skills/engineering/tdd/SKILL.md)** — Test-driven development with a red-green-refactor loop. Builds features or fixes bugs one vertical slice at a time.
-- **[to-issues](./skills/engineering/to-issues/SKILL.md)** — Break any plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices.
-- **[to-prd](./skills/engineering/to-prd/SKILL.md)** — Turn the current conversation context into a PRD and submit it as a GitHub issue. No interview — just synthesizes what you've already discussed.
-- **[zoom-out](./skills/engineering/zoom-out/SKILL.md)** — Tell the agent to zoom out and give broader context or a higher-level perspective on an unfamiliar section of code.
+- **[zoom-out](./skills/engineering/zoom-out/SKILL.md)** — Get a higher-level map of an unfamiliar section of code.
 
 ### Productivity
 
-General workflow tools, not code-specific.
-
-- **[caveman](./skills/productivity/caveman/SKILL.md)** — Ultra-compressed communication mode. Cuts token usage ~75% by dropping filler while keeping full technical accuracy.
-- **[grill-me](./skills/productivity/grill-me/SKILL.md)** — Get relentlessly interviewed about a plan or design until every branch of the decision tree is resolved.
-- **[write-a-skill](./skills/productivity/write-a-skill/SKILL.md)** — Create new skills with proper structure, progressive disclosure, and bundled resources.
+- **[grill-me](./skills/productivity/grill-me/SKILL.md)** — Get relentlessly interviewed about a plan or design until every branch is resolved.
+- **[write-a-skill](./skills/productivity/write-a-skill/SKILL.md)** — Author new skills with proper structure and progressive disclosure.
 
 ### Misc
 
-Tools I keep around but rarely use.
+- **[git-guardrails-claude-code](./skills/misc/git-guardrails-claude-code/SKILL.md)** — PreToolUse hook blocking dangerous git commands (`push --force`, `reset --hard`, `clean -f`, `branch -D`).
 
-- **[git-guardrails-claude-code](./skills/misc/git-guardrails-claude-code/SKILL.md)** — Set up Claude Code hooks to block dangerous git commands (push, reset --hard, clean, etc.) before they execute.
-- **[migrate-to-shoehorn](./skills/misc/migrate-to-shoehorn/SKILL.md)** — Migrate test files from `as` type assertions to @total-typescript/shoehorn.
-- **[scaffold-exercises](./skills/misc/scaffold-exercises/SKILL.md)** — Create exercise directory structures with sections, problems, solutions, and explainers.
-- **[setup-pre-commit](./skills/misc/setup-pre-commit/SKILL.md)** — Set up Husky pre-commit hooks with lint-staged, Prettier, type checking, and tests.
+## Inactive (preserved from upstream)
+
+These skills are present in the source tree but excluded from `.claude-plugin/plugin.json`. They are kept for low-friction upstream rebase, not for active use in this fork. Re-add to `plugin.json` if you find a use for one.
+
+- `productivity/caveman` — ultra-compressed communication mode. Not used here; full context budgets are fine.
+- `misc/setup-pre-commit` — Husky / lint-staged / Prettier setup. TypeScript-shaped; this fork uses Zig with `nix develop -c zig fmt`.
+- `misc/migrate-to-shoehorn` — TypeScript-specific migration helper.
+- `misc/scaffold-exercises` — AI-Hero-CLI course-tooling scaffold.
+
+`personal/` and `deprecated/` skills are excluded from this list and from the manifest by repo convention.
+
+## Credit
+
+Forked from [mattpocock/skills](https://github.com/mattpocock/skills). The "Why these skills exist" framing, the grilling/TDD/triage/PRD/setup skills, and the bucket structure are Matt's. Upstream changes are pulled when relevant; the fork specializes for cycle-accurate emulator development.

@@ -5,6 +5,8 @@ description: Test-driven development with red-green-refactor loop. Use when user
 
 # Test-Driven Development
 
+> For emulator/cycle-accurate work, also consult `/emudev` — it provides emulator-specific test categories (test ROMs, golden traces, determinism, save-state round-trip) and citation discipline that this skill defers to.
+
 ## Philosophy
 
 **Core principle**: Tests should verify behavior through public interfaces, not implementation details. Code can change entirely; tests shouldn't.
