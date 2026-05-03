@@ -3,6 +3,7 @@
   "skills": [
     "./skills/engineering/emudev",
     "./skills/engineering/diagnose",
+    "./skills/engineering/emulator-code-review",
     "./skills/engineering/grill-with-docs",
     "./skills/engineering/improve-codebase-architecture",
     "./skills/engineering/setup-matt-pocock-skills",
