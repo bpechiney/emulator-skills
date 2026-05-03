@@ -13,6 +13,8 @@ Beyond that invariant, the artifact graph varies:
 
 The illustrative shape below shows a single-domain core plus one frontend exe; multi-domain cores compose more sub-modules into `core_mod`, and additional downstream artifacts follow the same `addImport("core", core_mod)` pattern.
 
+**All `b.path(...)` arguments below are illustrative.** Substitute whichever paths fit your project's layout — flat (`core.zig` at root), conventional `src/`, multi-package `pkg/<name>/`, or anything else. The pattern is the module-graph shape, not the directory tree.
+
 ```zig
 const std = @import("std");
 
@@ -25,7 +27,7 @@ pub fn build(b: *std.Build) void {
     // imports per-domain sub-modules rather than holding all state
     // directly.
     const core_mod = b.createModule(.{
-        .root_source_file = b.path("src/core.zig"),
+        .root_source_file = b.path("<path/to/core/root>.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -39,7 +41,7 @@ pub fn build(b: *std.Build) void {
 
     // --- Frontend exe (one of potentially several downstream artifacts) ---
     const frontend_mod = b.createModule(.{
-        .root_source_file = b.path("src/frontend/main.zig"),
+        .root_source_file = b.path("<path/to/frontend/main>.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -77,7 +79,7 @@ Tests are first-class build steps. The standard shape:
     const test_rom_runner = b.addExecutable(.{
         .name = "test-rom-runner",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("tests/test_rom_runner.zig"),
+            .root_source_file = b.path("<path/to/test-rom-runner>.zig"),
             .target = target,
             .optimize = optimize,
         }),

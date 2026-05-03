@@ -105,30 +105,34 @@ Reserve `///` doc comments for the public API of a module (functions exported ac
 Useful when reviewing emulator code or auditing the citation surface.
 
 ```bash
+# Set these to match your project's layout.
+SRC=src                                  # source root
+HW_DIRS="$SRC/cpu $SRC/ppu $SRC/apu $SRC/bus $SRC/mappers $SRC/cart"
+
 # Hardware-derived files with no citation tag at all.
 # The "([[(][^:]*)?" admits the bracketed/parenthesized forms
 # (HW[<rev>]: / TEST[<id>]: / HACK[<game>] (#N): / TODO(#N):)
 # alongside the bare REF: / QUIRK: forms.
-rg --files src/{cpu,ppu,apu,bus,mappers,cart} | xargs -I{} sh -c '
+rg --files $HW_DIRS | xargs -I{} sh -c '
   grep -lE "(REF|QUIRK|HW|TEST|HACK|TODO)([[(][^:]*)?:" "{}" > /dev/null || echo "{}"
 '
 
 # Untracked HACKs (no issue link)
-rg "HACK\[" src/ | grep -vE "#[0-9]+"
+rg "HACK\[" $SRC | grep -vE "#[0-9]+"
 
 # Floating TODOs (no issue link)
-rg "TODO" src/ | grep -vE "TODO\(#[0-9]+\)"
+rg "TODO" $SRC | grep -vE "TODO\(#[0-9]+\)"
 
 # All hardware revisions touched
-rg -or '$1' 'HW\[([^]]+)\]' src/ | sort -u
+rg -or '$1' 'HW\[([^]]+)\]' $SRC | sort -u
 
 # All games / test ROMs referenced
-rg "(HACK|TEST)\[([^]]+)\]" src/ -or '$2' | sort -u
+rg "(HACK|TEST)\[([^]]+)\]" $SRC -or '$2' | sort -u
 
 # Density check: tag count vs hardware-derived file count.
 # Same regex shape as the missing-citation check above.
-echo "tags:";  rg -c "(REF|QUIRK|HW|TEST|HACK|TODO)([[(][^:]*)?:" src/
-echo "files:"; rg --files src/{cpu,ppu,apu,bus,mappers,cart} | wc -l
+echo "tags:";  rg -c "(REF|QUIRK|HW|TEST|HACK|TODO)([[(][^:]*)?:" $SRC
+echo "files:"; rg --files $HW_DIRS | wc -l
 ```
 
 These are convention checks, not enforcement gates. Wiring any of them into CI is a per-repo decision (see `build.md`).
