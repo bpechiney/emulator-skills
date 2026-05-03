@@ -8,7 +8,7 @@ The load-bearing invariant: **the core is headless** — it has no dependencies 
 
 Beyond that invariant, the artifact graph varies:
 
-- **Core library** — the deterministic emulation. For systems with **multiple clock domains** (e.g., the SNES SPC700 audio coprocessor running asynchronously to the main 65816), the core itself is naturally a module graph: a top-level core module that imports per-domain sub-modules (main CPU, audio coprocessor, DSP, cartridge coprocessors). Single-`src/core.zig` works for systems with a single SoC (Game Boy, NES); multi-domain systems will want sub-modules.
+- **Core library** — the deterministic emulation. For systems with **multiple clock domains** (e.g., the SNES SPC700 audio coprocessor running asynchronously to the main 65816), the core itself is naturally a module graph: a top-level core module that imports per-domain sub-modules (main CPU, audio coprocessor, DSP, cartridge coprocessors). A single-root core module works for systems with a single SoC (Game Boy, NES); multi-domain systems will want per-domain sub-modules under whatever root file the core is rooted at.
 - **Downstream artifacts** — open-ended. Frontends (GUI, TUI, in-process debugger), tools (headless trace dumper, ROM analyzer, save-state dumper), the test-ROM runner, optionally wasm or embedded builds. Each declares its own dependency on the core. The skill doesn't prescribe "one frontend" — ship as many downstream artifacts as the project needs.
 
 The illustrative shape below shows a single-domain core plus one frontend exe; multi-domain cores compose more sub-modules into `core_mod`, and additional downstream artifacts follow the same `addImport("core", core_mod)` pattern.

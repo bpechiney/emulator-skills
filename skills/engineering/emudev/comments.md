@@ -47,7 +47,7 @@ For paths gated at compile-time on the active fidelity scope (decision #6), the 
 
 ### `TEST` — test ROM exercises this path
 
-Bracketed test name when applicable. Useful for greppable regression context: `rg "TEST\[<suite-prefix>" src/` finds every code path a given test suite exercises.
+Bracketed test name when applicable. Useful for greppable regression context: `rg "TEST\[<suite-prefix>"` across the source tree finds every code path a given test suite exercises.
 
 ```zig
 // TEST[<suite>-<test-id>]: validates <what>. Make the bracketed name
