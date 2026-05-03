@@ -47,22 +47,24 @@ Save-state-and-restore must be **bit-identical**. This test also exists in every
 
 ```zig
 test "save-state round trip: arbitrary mid-frame" {
+    const allocator = std.testing.allocator;
+
     var c1 = try Console.init(rom);
     defer c1.deinit();
     for (0..1234) |_| c1.step(); // arbitrary mid-cycle
 
-    var buf = std.ArrayList(u8).init(std.testing.allocator);
-    defer buf.deinit();
-    try c1.serialize(buf.writer());
+    const blob = try c1.serialize(allocator);
+    defer allocator.free(blob);
 
     var c2 = try Console.init(rom);
     defer c2.deinit();
-    var stream = std.io.fixedBufferStream(buf.items);
-    try c2.deserialize(stream.reader());
+    try c2.deserialize(blob);
 
     try std.testing.expectEqualDeep(c1.snapshotBytes(), c2.snapshotBytes());
 }
 ```
+
+The `serialize(allocator) ![]u8` / `deserialize([]const u8) !void` shape sidesteps the Zig-stdlib churn around `std.ArrayList` and `std.io` / `std.Io`. Pick whichever stream type matches the current Zig release in your concrete `Console.serialize` / `Console.deserialize` implementations; the round-trip *test* only needs to round-trip a byte blob.
 
 ### Field-per-slice discipline
 

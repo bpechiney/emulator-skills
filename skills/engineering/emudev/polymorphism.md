@@ -55,8 +55,16 @@ pub fn Cpu(comptime Bus: type) type {
 
         pc: u16,
         sp: u16,
-        a: u8, b: u8, c: u8, d: u8, e: u8, h: u8, l: u8,
+        a: u8,
+        bc: u16,
+        de: u16,
+        hl: u16,
         flags: Flags,
+
+        // Half-register accessors (cpu.b(), cpu.c(), cpu.h(), cpu.l(), ...)
+        // elided. Pair storage matches the SM83 instructions that act on BC,
+        // DE, HL as 16-bit operands; halves are computed via @truncate /
+        // @as(u16, x) << 8.
 
         pub fn step(self: *Self, bus: *Bus) void {
             const op = bus.read(self.pc);
@@ -128,4 +136,4 @@ Vtables aren't on the hot path (per-frame `present` calls are cheap), so the ind
 
 - [dispatch.md](./dispatch.md) — opcode dispatch shape that calls into the bus type chosen here.
 - [packed-structs.md](./packed-structs.md) — most polymorphic register reads/writes flow through the mapper or bus boundary.
-- [testing.md](./testing.md) — `MockBus` patterns for unit-testing the CPU when the production bus is a `comptime` parameter.
+- [testing.md](./testing.md) — test discipline this skill defers to (test ROMs, determinism, save-state round-trip).

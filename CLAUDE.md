@@ -6,7 +6,7 @@ Skills are organized into bucket folders under `skills/`:
 - `personal/` — tied to my own setup, not promoted
 - `deprecated/` — no longer used
 
-The plugin manifest (`.claude-plugin/plugin.json`) lists the *active* set of skills. The bucket folders (`engineering/`, `productivity/`, `misc/`) hold the *available* set — they may contain inactive skills preserved from upstream that are not currently in the manifest. Inactive skills are documented in the top-level `README.md`'s "Inactive (preserved from upstream)" section. Skills in `personal/` and `deprecated/` must not appear in the manifest, the top-level `README.md`, or the bucket `README.md`s.
+The plugin manifest (`.claude-plugin/plugin.json`) lists the *active* set of skills. The bucket folders (`engineering/`, `productivity/`, `misc/`) hold the *available* set — they may contain inactive skills preserved from upstream that are not currently in the manifest. Inactive skills are documented in the top-level `README.md`'s "Inactive (preserved from upstream)" section. Skills in `personal/` and `deprecated/` must not appear in the manifest, the top-level `README.md`, or the `engineering/`, `productivity/`, or `misc/` bucket `README.md`s — but the `personal/README.md` and `deprecated/README.md` files do list their own contents per the bucket-README rule below.
 
 Each active skill in `engineering/`, `productivity/`, or `misc/` must have a reference in the top-level `README.md`. Each skill entry in the top-level `README.md` must link the skill name to its `SKILL.md`.
 

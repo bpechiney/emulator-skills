@@ -51,7 +51,7 @@ Every emudev repo has a typed `Hacks` namespace (bsnes/ares prior art, not Snes9
 
 Before implementing a new emulator (or a major subsystem), invoke `/grill-with-docs` to walk these candidates. Each typically passes the three-test (hard-to-reverse + surprising + real-trade-off) — `grill-with-docs` decides whether each warrants an ADR for *this* repo.
 
-1. **Dispatch strategy** — labeled `switch` with `continue :state .next_op` (the Zig 0.16 idiom; +13% on Zig's own tokenizer; observed in 0/12 surveyed Zig emulators) vs function-pointer table vs giant `switch`. See [dispatch.md](./dispatch.md).
+1. **Dispatch strategy** — labeled `switch` with `continue :dispatch op` (the Zig 0.16 idiom; +13% on Zig's own tokenizer; observed in 0/12 surveyed Zig emulators) vs function-pointer table vs giant `switch`. See [dispatch.md](./dispatch.md).
 
 2. **Mapper polymorphism** — tagged `union(enum)` with `inline else` (closed historical sets — NES has ~250 mappers but it's a closed set) vs vtable (open frontends) vs hybrid. See [polymorphism.md](./polymorphism.md).
 

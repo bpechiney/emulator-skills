@@ -49,11 +49,7 @@ The directory does not need to exist yet. The path is recorded; the first test-R
 
 The file does not need to exist yet. First `HACK` you tag will need a corresponding namespace entry — that's when the file gets created.
 
-### 5. Zig version pin
-
-> What Zig version is this repo pinned to? Default: read from `build.zig.zon`'s `minimum_zig_version`. Otherwise: `0.16.0`.
-
-This skill is hard-coupled to Zig 0.16. If the answer isn't `0.16.x`, surface a warning and continue using 0.16 conventions — but flag the mismatch so the user knows code samples may not compile cleanly until they upgrade.
+The Zig version is **not** asked here — `build.zig.zon`'s `minimum_zig_version` is the single source of truth, and SKILL.md's session-start sequence reads it from there. Persisting a separate `zig_version` field in `docs/agents/emudev.md` would create dead data that drifts.
 
 ## Write `docs/agents/emudev.md`
 
@@ -66,7 +62,6 @@ system: gameboy
 cycle_accuracy_tier: m-cycle
 test_rom_root: tests/test-roms/
 hacks_path: src/hacks.zig
-zig_version: 0.16.0
 ```
 
 ## Amend `AGENTS.md` / `CLAUDE.md`
@@ -89,7 +84,7 @@ If `docs/agents/emudev.md` already exists when emudev is invoked:
 
 1. Read it.
 2. Show the user the current values.
-3. Ask which (if any) to change. Don't re-ask all five questions.
+3. Ask which (if any) to change. Don't re-ask all four questions.
 4. Write the file back with edited values, preserving any fields you don't recognize (the user may have hand-added something).
 5. Update the `### Emudev` subsection in `AGENTS.md`/`CLAUDE.md` to match.
 

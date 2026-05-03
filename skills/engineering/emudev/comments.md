@@ -104,9 +104,12 @@ Reserve `///` doc comments for the public API of a module (functions exported ac
 Useful when reviewing emulator code or auditing the citation surface.
 
 ```bash
-# Hardware-derived files with no citation tag at all
+# Hardware-derived files with no citation tag at all.
+# The "([[(][^:]*)?" admits the bracketed/parenthesized forms
+# (HW[CGB]: / TEST[blargg]: / HACK[Game] (#N): / TODO(#N):)
+# alongside the bare REF: / QUIRK: forms.
 rg --files src/{cpu,ppu,apu,bus,mappers,cart} | xargs -I{} sh -c '
-  grep -lE "(REF|QUIRK|HW|TEST|HACK|TODO):" "{}" > /dev/null || echo "{}"
+  grep -lE "(REF|QUIRK|HW|TEST|HACK|TODO)([[(][^:]*)?:" "{}" > /dev/null || echo "{}"
 '
 
 # Untracked HACKs (no issue link)
@@ -116,13 +119,14 @@ rg "HACK\[" src/ | grep -vE "#[0-9]+"
 rg "TODO" src/ | grep -vE "TODO\(#[0-9]+\)"
 
 # All hardware revisions touched
-rg "HW\[" src/ -o | sort -u
+rg -or '$1' 'HW\[([^]]+)\]' src/ | sort -u
 
 # All games / test ROMs referenced
 rg "(HACK|TEST)\[([^]]+)\]" src/ -or '$2' | sort -u
 
-# Density check: tag count vs hardware-derived file count
-echo "tags:"; rg -c "(REF|QUIRK|HW|TEST|HACK|TODO):" src/
+# Density check: tag count vs hardware-derived file count.
+# Same regex shape as the missing-citation check above.
+echo "tags:";  rg -c "(REF|QUIRK|HW|TEST|HACK|TODO)([[(][^:]*)?:" src/
 echo "files:"; rg --files src/{cpu,ppu,apu,bus,mappers,cart} | wc -l
 ```
 

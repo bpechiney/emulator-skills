@@ -2,7 +2,7 @@
 
 CPU opcode dispatch in cycle-accurate emulators in Zig 0.16.
 
-## The recommended pattern: labeled `switch` with `continue :state`
+## The recommended pattern: labeled `switch` with `continue :dispatch`
 
 Zig 0.16's labeled `switch` form is the recommended dispatch pattern for opcode loops. Zig's own tokenizer measured a +13% throughput gain converting from a giant `switch` to this form. Of ~12 surveyed Zig-language emulators in late 2025, **zero** used it — the pattern is non-default. Greenfield emulator projects should adopt it from day one.
 
