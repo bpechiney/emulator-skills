@@ -7,7 +7,7 @@
 The standard shape — the **two-artifact split**:
 
 - **Core library** (`core` or `<system>_core`) — headless, deterministic, no frontend dependencies. Consumed by tests, by the frontend binary, by tools.
-- **Frontend binary** — depends on the core library plus a renderer (raylib / SDL / TUI). Owns wall-clock timing, input handling, audio output.
+- **Frontend binary** — depends on the core library plus whatever renderer / audio sink / input source you pick. Owns wall-clock timing, input handling, audio output.
 
 ```zig
 const std = @import("std");
@@ -37,7 +37,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     frontend_mod.addImport("core", core_mod);
-    // ... add raylib / SDL imports here ...
+    // ... add your renderer / audio / input imports here ...
 
     const frontend_exe = b.addExecutable(.{
         .name = "<emu>",

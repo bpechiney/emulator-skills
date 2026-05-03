@@ -32,10 +32,10 @@ This is hard to upgrade later — picking M-cycle then trying to get T-state acc
 
 If user is unsure, recommend running `/grill-with-docs` against decision #3 first, then come back.
 
-Default suggestions:
-- Game Boy → `m-cycle` (Mooneye / mealybug-tearoom suites assume this baseline)
-- NES → `m-cycle` or `t-state` depending on whether you want pixel-precise PPU
-- SNES → `t-state` (sub-instruction)
+Common starting points (not prescriptions — verify against the test suites you care about):
+- Game Boy → `m-cycle`
+- NES → `m-cycle` or `t-state` depending on whether pixel-precise PPU is in scope
+- SNES → `t-state`
 
 ### 3. Test-ROM submodule root
 

@@ -8,7 +8,7 @@ Every function or block whose existence is hardware-derived must carry at least 
 
 ### `REF` — external citation
 
-Citation of an authoritative external source (pandocs, nesdev wiki, fullsnes, gbdev community, an ADR, a CPU manual). Almost always co-occurs with `QUIRK` or `HW`.
+Citation of an authoritative external source — a hardware reference doc, an ADR, or a CPU manual. Almost always co-occurs with `QUIRK` or `HW`.
 
 ```zig
 // REF: pandocs/oam_dma.html
@@ -17,7 +17,7 @@ Citation of an authoritative external source (pandocs, nesdev wiki, fullsnes, gb
 fn startOamDma(self: *Bus, src: u8) void { ... }
 ```
 
-Prefer the **Mesen-style verbatim quote** pattern: paste the cited sentence into the comment block. URL rot doesn't void verbatim quotes.
+Prefer the **verbatim-quote pattern**: paste the cited sentence into the comment block. URL rot doesn't void verbatim quotes — the source text is preserved in the source.
 
 For ADR references, cite the file path (not a numeric ID): `// REF: docs/adr/<NNNN-slug>.md`. Paths are stable; numeric shorthand is less greppable.
 
@@ -47,27 +47,28 @@ For paths gated at compile-time on the active fidelity scope (decision #6), the 
 
 ### `TEST` — test ROM exercises this path
 
-Bracketed test name when applicable. Useful for greppable regression context: `rg "TEST\[blargg" src/` finds every code path the Blargg suite exercises.
+Bracketed test name when applicable. Useful for greppable regression context: `rg "TEST\[<suite-prefix>" src/` finds every code path a given test suite exercises.
 
 ```zig
-// TEST[blargg-cpu_instrs-01-special]: validates DAA semantics across
-// the carry / half-carry cross-product.
+// TEST[<suite>-<test-id>]: validates <what>. Make the bracketed name
+// match exactly what `rg "TEST\[<suite>"` should find when triaging
+// regressions in that suite.
 ```
 
 ### `HACK` — imperfect approximation
 
 Requires **all three** of the following — without all three, it's not a `HACK`, it's bad code. Delete instead of tag:
 
-1. Bracketed game or test name (`HACK[Pokemon Red]`)
-2. Linked issue (`#142`) tracking removal
-3. Stated hardware uncertainty — what we don't yet know that justifies the imperfection
+1. Bracketed game or test name (`HACK[<Game>]`) — what real-world thing forced this.
+2. Linked issue (`(#N)`) tracking removal.
+3. Stated hardware uncertainty — what we don't yet know that justifies the imperfection.
 
 ```zig
-// HACK[Pokemon Red] (#142): we read OAM from the CPU side here even
-// though it's bus-arbitrated. Pokemon Red would otherwise hang during
-// the intro. Hardware uncertainty: real DMG appears to have a non-
-// deterministic delay we haven't reverse-engineered. Remove when the
-// intro test ROM passes without this.
+// HACK[<Game>] (#N): <what we do that's imperfect> — <why we do it,
+// e.g., the game would otherwise hang on a specific path>. Hardware
+// uncertainty: <what we don't yet know that would let us fix this
+// properly>. Remove when <removal condition, e.g., a specific test
+// passes without this hack>.
 ```
 
 Every active `HACK` is also catalogued in the typed `Hacks` namespace (location declared in `docs/agents/emudev.md`). The inline tag is the breadcrumb at the use site; the namespace is the auditable catalog.
@@ -77,8 +78,8 @@ Every active `HACK` is also catalogued in the typed `Hacks` namespace (location 
 Always carries a linked issue. No floating TODOs.
 
 ```zig
-// TODO(#67): MBC3 RTC carry past 511 days unverified — need to run
-// mooneye-mbc3-rtc.gb on real hardware.
+// TODO(#N): <what's unverified or missing> — <how to verify or
+// what's needed to finish>.
 ```
 
 ## Naming hygiene: `QUIRK` vs fidelity scope
@@ -106,7 +107,7 @@ Useful when reviewing emulator code or auditing the citation surface.
 ```bash
 # Hardware-derived files with no citation tag at all.
 # The "([[(][^:]*)?" admits the bracketed/parenthesized forms
-# (HW[CGB]: / TEST[blargg]: / HACK[Game] (#N): / TODO(#N):)
+# (HW[<rev>]: / TEST[<id>]: / HACK[<game>] (#N): / TODO(#N):)
 # alongside the bare REF: / QUIRK: forms.
 rg --files src/{cpu,ppu,apu,bus,mappers,cart} | xargs -I{} sh -c '
   grep -lE "(REF|QUIRK|HW|TEST|HACK|TODO)([[(][^:]*)?:" "{}" > /dev/null || echo "{}"

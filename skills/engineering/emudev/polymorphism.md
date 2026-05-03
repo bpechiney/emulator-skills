@@ -8,7 +8,7 @@ Choosing between tagged union, vtable, and `comptime` monomorphization for the r
 |---|---|---|---|
 | **Mappers / cartridges** | NES ~250, Game Boy ~10, SNES ~30 | Closed historical set — no new ones will be invented | Tagged `union(enum)` with `inline else` dispatch |
 | **CPU↔Bus** | 1 per concrete bus type (typically just *the* bus) | Closed at compile time within a build | `comptime Bus: type` (monomorphized) |
-| **Frontend** (renderer, audio, input) | Many possible (raylib, SDL, TUI, headless, web) | Open — users may add new ones | Vtable (function-pointer struct) |
+| **Frontend** (renderer, audio, input) | Open-ended | Open — users may add new ones | Vtable (function-pointer struct) |
 | **Multi-system Console** | If you ever build one supervisor that can host both GB and NES cores | Closed but small | Tagged `union(enum)` |
 
 The temptation to use a vtable everywhere because "polymorphism is polymorphism" leaves performance on the table for the hot-path closed-set cases (mappers, bus). The temptation to use tagged unions everywhere creates impossible-to-extend frontends. **Match the shape to the openness of the set.**
@@ -62,7 +62,7 @@ If you decide testability outweighs the perf gain, use a vtable. But for cycle-a
 
 ## Vtable (function-pointer struct) for frontends
 
-Frontends are open: users may swap raylib for SDL, add a TUI, add a headless trace dumper, add a web-assembly bridge. Vtable is the right shape.
+Frontends are open: renderer / audio / input implementations can be swapped or added at any time. Vtable is the right shape.
 
 ```zig
 pub const Renderer = struct {
@@ -81,7 +81,7 @@ pub const Renderer = struct {
 };
 ```
 
-Each concrete renderer (raylib, SDL, TUI, headless trace dumper, ...) provides a `fn renderer(self: *Self) Renderer` that supplies its `ctx` + a static `Vtable` whose function pointers `@ptrCast(@alignCast(ctx))` back to `*Self`.
+Each concrete renderer provides a `fn renderer(self: *Self) Renderer` that supplies its `ctx` + a static `Vtable` whose function pointers `@ptrCast(@alignCast(ctx))` back to `*Self`.
 
 Vtables aren't on the hot path (per-frame `present` calls are cheap), so the indirection is fine.
 

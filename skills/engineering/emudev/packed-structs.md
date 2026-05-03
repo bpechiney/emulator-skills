@@ -1,6 +1,6 @@
 # Packed structs — hardware register layouts
 
-Modeling hardware registers (LCDC, STAT, NR-series APU regs, PPUCTRL, etc.) with `packed struct` and `@bitCast` in Zig 0.16. Lean reference; not an exhaustive Zig packed-struct manual.
+Modeling hardware registers (status flags, mode controls, channel parameters, etc.) with `packed struct` and `@bitCast` in Zig 0.16. Lean reference; not an exhaustive Zig packed-struct manual.
 
 ## The pattern
 
@@ -86,11 +86,10 @@ A register isn't "read-only at the type level" — it's read-only at the bus bou
 
 ```zig
 // GOOD:
-const out: u8 = @bitCast(self.lcdc);
+const out: u8 = @bitCast(self.some_reg);
 
-// BAD: pretends a u8 in a struct is a Lcdc; alignment-fragile,
-// can violate strict aliasing.
-const ptr: *Lcdc = @ptrCast(&self.lcdc_byte);
+// BAD: alignment-fragile, can violate strict aliasing.
+const ptr: *SomeReg = @ptrCast(&self.some_reg_byte);
 ```
 
 ## Non-byte-width registers
@@ -114,5 +113,5 @@ Declare the sprite struct's fields in the order the hardware lays them out in me
 
 ## Cross-references
 
-- [comments.md](./comments.md) — every register definition cites pandocs / nesdev / fullsnes.
+- [comments.md](./comments.md) — every register definition carries a `REF` to its hardware doc.
 - [dispatch.md](./dispatch.md) — opcode handlers that read/write through the bus call into these typed accessors.

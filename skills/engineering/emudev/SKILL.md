@@ -45,7 +45,7 @@ The CPU dispatch loop, PPU pixel pipeline, and APU sample generator do not alloc
 
 ### 5. Typed `Hacks` namespace from day one
 
-Every emudev repo has a typed `Hacks` namespace (bsnes/ares prior art, not Snes9x-style untyped). Location declared in `docs/agents/emudev.md`. Every active hack is named there with a removal target. Inline `HACK[Game]` tags at use sites are the breadcrumbs; the namespace is the catalog.
+Every emudev repo has a typed `Hacks` namespace. Location declared in `docs/agents/emudev.md`. Every active hack is named there with a removal target. Inline `HACK[Game]` tags at use sites are the breadcrumbs; the namespace is the catalog. The point is auditability — untyped, scattered hacks become invisible debt; a typed catalog stays prosecutable.
 
 ## Six decisions worth grilling
 
@@ -102,7 +102,7 @@ If `build.zig.zon`'s `minimum_zig_version` is not `0.16.x`, surface a one-line w
 | [comments.md](./comments.md) | Adding inline citations, writing or reviewing comments |
 | [dispatch.md](./dispatch.md) | Implementing CPU opcode dispatch |
 | [polymorphism.md](./polymorphism.md) | Implementing mapper variants or any closed-set polymorphism |
-| [packed-structs.md](./packed-structs.md) | Modeling hardware registers (LCDC/STAT/OAM-equivalents) |
+| [packed-structs.md](./packed-structs.md) | Modeling hardware registers and sprite tables |
 | [testing.md](./testing.md) | Wiring test ROMs, determinism tests, save-state round-trip |
 | [build.md](./build.md) | Editing `build.zig` (artifact split, feature flags, test wiring) |
 | [setup.md](./setup.md) | First emudev invocation in a fresh repo |

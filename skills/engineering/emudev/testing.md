@@ -85,13 +85,13 @@ Don't decide migration discipline post-hoc — bumping a version without a migra
 
 ## Golden traces
 
-For mid-build verification of cycle-exact paths (specifically the CPU during opcode bring-up), capture **golden traces**: a ROM-driven log of `(pc, opcode, A, F, B, C, D, E, H, L, SP, cycles)` per instruction. Diff against a known-good emulator's trace (e.g., SameBoy for Game Boy). The first divergence tells you exactly which opcode mis-implements something.
+For mid-build verification of cycle-exact paths (specifically the CPU during opcode bring-up), capture **golden traces**: a ROM-driven log of every CPU register plus cycle count per instruction. Diff against a known-good reference emulator's trace for the same ROM. The first divergence tells you exactly which opcode mis-implements something.
 
 This is heavy; reserve for CPU bring-up and PPU mode-3 timing work, not as a default test.
 
 ## Frontends and headless
 
-The core must be **headless-capable**. Tests do not require a window or audio device. The frontend (raylib, SDL, TUI) is a separate artifact that consumes the core's framebuffer / audio buffer. Tests run against the core directly.
+The core must be **headless-capable**. Tests do not require a window or audio device. The frontend is a separate artifact that consumes the core's framebuffer / audio buffer. Tests run against the core directly.
 
 Determinism + headless together mean every test is `zig build test` on a CI runner with no graphical environment. No `xvfb`, no headless-Chrome equivalents. This is the single biggest win the headless-from-day-one decision buys.
 
@@ -99,4 +99,4 @@ Determinism + headless together mean every test is `zig build test` on a CI runn
 
 - `/tdd` — drives the red-green-refactor loop using the categories above.
 - [build.md](./build.md) — how each test category is wired as a `zig build` step.
-- [comments.md](./comments.md) — tests cite the suite they verify (`TEST[blargg-cpu_instrs-01]`).
+- [comments.md](./comments.md) — tests cite the suite they verify via `TEST[<suite>-<test-id>]` tags.
