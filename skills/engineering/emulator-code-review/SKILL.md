@@ -48,8 +48,8 @@ Always load the relevant **component checklist** for the file under review. Add 
 | Scheduler / clock-sharing | `checklists/cycle_accuracy.md` §4 + `checklists/bus_review.md` |
 | Diagnosing from a symptom | `checklists/failure_diagnosis.md` first, then route into the component implicated |
 | Hot-path performance, architectural redesign | **out of scope** — see anti-features |
-| Frontend glue, CI, save-directory / config plumbing | **out of scope** — pair with `/feature-dev:code-reviewer` or `/review` (consumer's cold-read review pass) |
-| `build.zig` / `build.zig.zon` (artifact split, feature flags, test wiring) | **out of scope here** — see `/emudev` `build.md` for build-side review |
+| Frontend glue, CI, save-directory / config plumbing | **out of scope** |
+| `build.zig` / `build.zig.zon` (artifact split, feature flags, test wiring) | **out of scope** |
 
 ## Invocation context
 
