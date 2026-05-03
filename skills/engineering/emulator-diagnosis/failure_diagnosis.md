@@ -35,12 +35,12 @@ This file is the most-likely-to-drift in the entire skill. New games get reverse
 ### Title screen correct, gameplay graphics garble
 
 - **`[NES]`** MMC1 mode bit not honoured → game switches PRG/CHR mode for gameplay vs title.
-- **`[NES]`** MMC3 IRQ misfiring on wrong scanline → status bar tears or splits at wrong row. A12 filter likely missing or wrong window. See checklists/mapper_review.md §1 (IRQ tick granularity).
+- **`[NES]`** MMC3 IRQ misfiring on wrong scanline → status bar tears or splits at wrong row. A12 filter likely missing or wrong window.
 - **`[NES]`** CHR-RAM writes silently dropped → game DMAs tile data from CPU RAM each frame; nothing changes.
-- **`[GB]`** MBC1 mode bit (mode 0 vs mode 1) wrong with > 8 KiB cart RAM → wrong save-data layout. See checklists/mapper_review.md §2.
+- **`[GB]`** MBC1 mode bit (mode 0 vs mode 1) wrong with > 8 KiB cart RAM → wrong save-data layout.
 - **`[GB]`** MBC3 bank 0 register not honoured (writing 0 should map as 1).
 - **`[SNES]`** DMA transfer length wrong (0 = 65536 bytes, not 0 bytes) → graphics data truncated.
-- **`[SNES]`** HDMA channel ordering wrong → mid-frame graphics changes happen on wrong line. See checklists/bus_review.md §2 [SNES].
+- **`[SNES]`** HDMA channel ordering wrong → mid-frame graphics changes happen on wrong line.
 - **`[SNES]`** Coprocessor RAM uninitialised on power-on (SA-1 BWRAM, SuperFX cache) → first frame shows garbage that "fixes itself" by frame 2.
 
 ### One scanline of graphics is wrong (specific horizontal stripe)
@@ -69,7 +69,7 @@ This file is the most-likely-to-drift in the entire skill. New games get reverse
 - **`[NES]`** Frame counter mode bit wrong → length / envelope clocked at wrong rate.
 - **`[NES]`** DMC rate table indexed wrong, or NTSC table used for PAL release.
 - **`[NES]`** Noise period table wrong region (NTSC vs PAL distinction missing).
-- **`[GB]`** Frame sequencer clocked off wrong DIV bit (bit 5 / bit 6 confusion in double-speed). See checklists/apu_review.md §1 [GB].
+- **`[GB]`** Frame sequencer clocked off wrong DIV bit (bit 5 / bit 6 confusion in double-speed).
 - **`[SNES]`** SPC700/DSP clock ratio wrong → music tempo off; voice pitch follows DSP rate.
 
 ### Audio missing one or more channels
@@ -123,14 +123,14 @@ This file is the most-likely-to-drift in the entire skill. New games get reverse
 
 ### Save file from one emulator doesn't load on another (same ROM)
 
-- Endianness in save format → see `save_state_review.md` §3.
+- Endianness in save format.
 - Pointer serialization — addresses serialized as integers don't survive across processes.
 - Uninitialised RAM at save-creation pulled from host allocator → save replays produce different output.
 
 ### Save-state load → different output after running forward
 
-- Implicit state missing from serialiser. Cross-reference each component's §5 in `cpu_review.md` / `ppu_review.md` / `apu_review.md` / `mapper_review.md` / `bus_review.md`.
-- Save captured mid-step (catch-up scheduler, mid-instruction CPU). See `save_state_review.md` §1.
+- Implicit state missing from serialiser.
+- Save captured mid-step (catch-up scheduler, mid-instruction CPU).
 - Determinism leak: hash-map iteration, time-based seed, host-endian @bitCast.
 
 ### Save corruption mid-play (no save-state involved)

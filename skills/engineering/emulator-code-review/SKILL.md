@@ -28,7 +28,7 @@ Review posture for cycle-accurate retro console emulators in Zig 0.16+. Out of s
 
 ## Routing — load only what the review needs
 
-Always load the relevant **component checklist** for the file under review. Add `checklists/cycle_accuracy.md` for any timing-sensitive review, `references/test_roms.md` when the user references a specific ROM result, and `checklists/failure_diagnosis.md` when starting from a bug symptom rather than a file. Per-system citation lists live at `references/{nes,gameboy,snes}.md` — load these when a finding needs an external citation pointer; checklists already cite inline.
+Always load the relevant **component checklist** for the file under review. Add `checklists/cycle_accuracy.md` for any timing-sensitive review, and `references/test_roms.md` when the user references a specific ROM result. Per-system citation lists live at `references/{nes,gameboy,snes}.md` — load these when a finding needs an external citation pointer; checklists already cite inline.
 
 | Reviewing... | Load |
 |---|---|
@@ -46,7 +46,6 @@ Always load the relevant **component checklist** for the file under review. Add 
 | Cartridge / ROM header parser | `checklists/mapper_review.md` §7 |
 | Test-ROM harness | `checklists/test_rom_harness.md` + `checklists/save_state_review.md` §5 |
 | Scheduler / clock-sharing | `checklists/cycle_accuracy.md` §4 + `checklists/bus_review.md` |
-| Diagnosing from a symptom | `checklists/failure_diagnosis.md` first, then route into the component implicated |
 | Hot-path performance, architectural redesign | **out of scope** — see anti-features |
 | Frontend glue, CI, save-directory / config plumbing | **out of scope** |
 | `build.zig` / `build.zig.zon` (artifact split, feature flags, test wiring) | **out of scope** |

@@ -5,6 +5,7 @@ Skills used daily for code work.
 - **[emudev](./emudev/SKILL.md)** — Coding standards for cycle-accurate retro console emulators (Game Boy, NES, SNES) in Zig 0.16. Standing rules, six load-bearing decisions for `/grill-with-docs`, per-system references.
 - **[diagnose](./diagnose/SKILL.md)** — Disciplined diagnosis loop for hard bugs and performance regressions: reproduce → minimise → hypothesise → instrument → fix → regression-test.
 - **[emulator-code-review](./emulator-code-review/SKILL.md)** — Reviews Zig code for cycle-accurate Game Boy, NES, and SNES emulators. Per-component checklists, citation rubric, test-ROM evidence requirement. Review-side counterpart to `emudev`.
+- **[emulator-diagnosis](./emulator-diagnosis/SKILL.md)** — Symptom-driven diagnosis for cycle-accurate Game Boy, NES, and SNES emulators. Maps observed symptoms to likely causes by category. Use when starting from a bug report.
 - **[grill-with-docs](./grill-with-docs/SKILL.md)** — Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates `CONTEXT.md` and ADRs inline.
 - **[triage](./triage/SKILL.md)** — Triage issues through a state machine of triage roles.
 - **[improve-codebase-architecture](./improve-codebase-architecture/SKILL.md)** — Find deepening opportunities in a codebase, informed by the domain language in `CONTEXT.md` and the decisions in `docs/adr/`.
