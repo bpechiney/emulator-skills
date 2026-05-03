@@ -80,9 +80,20 @@ Emudev defers loops and processes to sibling skills. It contributes domain conte
 
 ## Zig version
 
-This skill assumes **Zig 0.16** (released 2026-04-13). All code samples target 0.16. When Zig 0.17 ships and you migrate a repo, bump this skill in lockstep with the repos.
+This skill assumes **Zig 0.16** (released 2026-04-13). All code samples target 0.16.
 
-If `build.zig.zon`'s `minimum_zig_version` is not `0.16.x`, surface a one-line warning at session start. Proceed using 0.16 conventions; do not attempt to adapt code samples to other versions.
+A Zig major-release bump is not a version-flag flip — it's a content re-audit of every code sample and recommended pattern. Each recent Zig release has reshaped at least one of:
+
+- The build-system surface (`b.addOptions`, `b.addModule`, `addImport` shapes)
+- Labeled-switch / `continue :state` syntax (the dispatch pattern recommended here is itself recent)
+- `inline else` semantics on tagged unions
+- `@bitCast` / `@ptrCast` / `@enumFromInt` builtins and their alignment rules
+- `packed struct(T)` declaration shape
+- Stdlib reorganization
+
+Plan a Zig migration as a focused PR against this skill: re-validate every code sample under the new compiler, update idioms where the language has moved, then bump the version pin. Don't let consuming repos drift ahead of the skill — drift between the two is what breaks "works in my emulator repo" assumptions.
+
+If `build.zig.zon`'s `minimum_zig_version` is not `0.16.x`, surface a one-line warning at session start. Proceed using 0.16 conventions; do not attempt to adapt code samples to other versions on the fly.
 
 ## File index
 
