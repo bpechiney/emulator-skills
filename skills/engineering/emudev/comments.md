@@ -19,9 +19,9 @@ fn startOamDma(self: *Bus, src: u8) void { ... }
 
 Prefer the **Mesen-style verbatim quote** pattern: paste the cited sentence into the comment block. URL rot doesn't void verbatim quotes.
 
-For ADR references: `// REF: docs/adr/0007-per-milestone-prd.md`.
+For ADR references, cite the file path (not a numeric ID): `// REF: docs/adr/0007-per-milestone-prd.md`. Paths are stable; numeric shorthand is less greppable.
 
-Forms catalogued in [references/shared/citation-prefixes.md](./references/shared/citation-prefixes.md).
+**Don't cite**: the Zig stdlib (the agent has stdlib knowledge), common-knowledge CPU concepts (what `ADD A, B` does), or your own code in another file (use module imports and `///` doc comments instead).
 
 ### `QUIRK` — non-obvious universal hardware behavior
 

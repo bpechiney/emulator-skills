@@ -2,7 +2,7 @@
 
 Agent skills for building cycle-accurate retro console emulators (Game Boy, NES, SNES) in Zig 0.16.
 
-A specialized fork of [mattpocock/skills](https://github.com/mattpocock/skills). The signature skill is **[`/emudev`](./skills/engineering/emudev/SKILL.md)** — coding standards, citation discipline, and per-system references for cycle-accurate emulator work. The remaining skills (TDD, grilling, diagnosis, issue management) compose with `/emudev` and are kept largely as-is from upstream.
+A specialized fork of [mattpocock/skills](https://github.com/mattpocock/skills). The signature skill is **[`/emudev`](./skills/engineering/emudev/SKILL.md)** — coding standards and citation discipline for cycle-accurate emulator work. The remaining skills (TDD, grilling, diagnosis, issue management) compose with `/emudev` and are kept largely as-is from upstream.
 
 ## Quickstart
 
@@ -81,7 +81,7 @@ Use:
 
 ### Engineering
 
-- **[emudev](./skills/engineering/emudev/SKILL.md)** — Coding standards for cycle-accurate retro console emulators in Zig 0.16. Standing rules (six-tag citation taxonomy, no-alloc hot path, typed `Hacks`, `TODO`/`HACK` linked-issue), six load-bearing decisions for `/grill-with-docs`, and per-system references (`gameboy/`, `nes/`, `snes/`).
+- **[emudev](./skills/engineering/emudev/SKILL.md)** — Coding standards for cycle-accurate retro console emulators in Zig 0.16. Standing rules (six-tag citation taxonomy, no-alloc hot path, typed `Hacks`, `TODO`/`HACK` linked-issue), six load-bearing decisions for `/grill-with-docs`, code patterns (labeled-switch dispatch, tagged-union polymorphism, packed-struct register layouts), test discipline (determinism, save-state round-trip).
 - **[diagnose](./skills/engineering/diagnose/SKILL.md)** — Disciplined diagnosis loop: reproduce → minimise → hypothesise → instrument → fix → regression-test.
 - **[grill-with-docs](./skills/engineering/grill-with-docs/SKILL.md)** — Grilling session that challenges your plan against the existing domain model and updates `CONTEXT.md` / ADRs inline.
 - **[improve-codebase-architecture](./skills/engineering/improve-codebase-architecture/SKILL.md)** — Find deepening opportunities, informed by `CONTEXT.md` and `docs/adr/`.

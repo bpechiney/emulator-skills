@@ -12,7 +12,7 @@ Test ROMs are the gold standard for emulator correctness. Each suite has a deter
 - **Register magic-pattern** — at completion, the CPU registers hold a sentinel value (e.g. a Fibonacci sequence); the harness asserts on register state.
 - **Framebuffer hash** — the harness captures the framebuffer at a specified cycle count and compares against a vendored expected hash.
 
-Per-system suite-to-shape mappings, vendoring details, and signal-extraction conventions live in `references/<system>/test-rom-catalog.md`. Wiring lives in [build.md](./build.md). Use a per-suite cycle timeout so a hang is a failure, not a wedged CI run.
+Per-system suite-to-shape mappings, vendoring policy, and signal-extraction conventions belong in the consuming emulator repo's docs (typically `docs/test-roms.md` or similar). Build wiring lives in [build.md](./build.md). Use a per-suite cycle timeout so a hang is a failure, not a wedged CI run.
 
 ## Determinism — non-negotiable
 
@@ -98,4 +98,3 @@ Determinism + headless together mean every test is `zig build test` on a CI runn
 - `/tdd` — drives the red-green-refactor loop using the categories above.
 - [build.md](./build.md) — how each test category is wired as a `zig build` step.
 - [comments.md](./comments.md) — tests cite the suite they verify (`TEST[blargg-cpu_instrs-01]`).
-- `references/<system>/test-rom-catalog.md` — per-system wiring details and known baselines.

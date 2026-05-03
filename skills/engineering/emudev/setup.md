@@ -22,7 +22,7 @@ Ask one question at a time. Don't dump the form.
 
 > Which retro console does this emulator emulate? `gameboy`, `nes`, or `snes`?
 
-The valid set is exactly those three. If the user names something else (e.g. CHIP-8, Atari 2600, Genesis), stop and tell them: this skill targets Game Boy / NES / SNES; CHIP-8 is intentionally out of scope (see chippy as the canonical CHIP-8 reference); other systems would require extending `references/` first.
+The valid set is exactly those three. If the user names something else (e.g. CHIP-8, Atari 2600, Genesis), stop and tell them: this skill targets Game Boy / NES / SNES; CHIP-8 is intentionally out of scope (see chippy as the canonical CHIP-8 reference); other systems would require extending the skill first.
 
 ### 2. Cycle-accuracy tier
 
@@ -30,7 +30,7 @@ The valid set is exactly those three. If the user names something else (e.g. CHI
 
 This is hard to upgrade later — picking M-cycle then trying to get T-state accuracy means rewriting the CPU loop. Pick the highest tier you intend to ship.
 
-If user is unsure, recommend running `/grill-with-docs` against decision #3 first, then come back. See `references/shared/cycle-accuracy-tiers.md` for the trade-offs.
+If user is unsure, recommend running `/grill-with-docs` against decision #3 first, then come back.
 
 Default suggestions:
 - Game Boy → `m-cycle` (Mooneye / mealybug-tearoom suites assume this baseline)

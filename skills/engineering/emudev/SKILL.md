@@ -1,6 +1,6 @@
 ---
 name: emudev
-description: Coding standards for cycle-accurate retro console emulators (Game Boy, NES, SNES) in Zig 0.16. Use when working under cpu/, ppu/, apu/, cart/, mappers/, bus/, or when the user mentions opcodes, addressing modes, T-states, M-cycles, scanlines, vblank/hblank, mappers, MBCs, IRQs, NMIs, OAM, DMC, frame counters, save-state schemas, or test ROMs. Loads standing rules and references/<system>/ for the system configured in docs/agents/emudev.md.
+description: Coding standards for cycle-accurate retro console emulators (Game Boy, NES, SNES) in Zig 0.16. Use when working under cpu/, ppu/, apu/, cart/, mappers/, bus/, or when the user mentions opcodes, addressing modes, T-states, M-cycles, scanlines, vblank/hblank, mappers, MBCs, IRQs, NMIs, OAM, DMC, frame counters, save-state schemas, or test ROMs. Loads standing rules and the per-repo configuration in docs/agents/emudev.md.
 ---
 
 # Emudev
@@ -12,7 +12,8 @@ Coding standards for cycle-accurate retro console emulators (Game Boy, NES, SNES
 1. Read `docs/agents/emudev.md` to find the active `system` (`gameboy`, `nes`, `snes`) and other config (cycle-accuracy tier, `Hacks` location, test-ROM root).
 2. If the file is missing, run the lazy-creation interview from [setup.md](./setup.md). It is idempotent — re-running on an existing config edits in place rather than overwriting.
 3. Verify Zig version. Read `build.zig.zon`'s `minimum_zig_version`. If it isn't `0.16.x`, surface a one-line warning at session start and proceed using 0.16 conventions.
-4. Load `references/<system>/` for the active system on demand. The files are named, not exhaustive — load only what's relevant to the work in front of you.
+
+System-specific domain content (hardware codenames, test-ROM wiring, fidelity-scope choices) lives in the consuming emulator repo's `CONTEXT.md` / `docs/` / `docs/adr/` — not in this skill. The skill is about *how* to write emulator code; the *what* of any specific system is the consuming repo's territory.
 
 ## Standing rules
 
@@ -54,13 +55,13 @@ Before implementing a new emulator (or a major subsystem), invoke `/grill-with-d
 
 2. **Mapper polymorphism** — tagged `union(enum)` with `inline else` (closed historical sets — NES has ~250 mappers but it's a closed set) vs vtable (open frontends) vs hybrid. See [polymorphism.md](./polymorphism.md).
 
-3. **Cycle accuracy tier** — instruction-stepped vs M-cycle vs T-state. Hard to upgrade later (changing tier rewrites the CPU loop). See [`references/shared/cycle-accuracy-tiers.md`](./references/shared/cycle-accuracy-tiers.md).
+3. **Cycle accuracy tier** — instruction-stepped vs M-cycle vs T-state. Hard to upgrade later (changing tier rewrites the CPU loop and ripples to PPU/APU).
 
 4. **Save-state schema versioning + migration** — explicit version + migration ladder vs schema-as-code (compile-time snapshot of the state struct) vs deferred. Bumping a version without a migration breaks every user save. See [testing.md](./testing.md).
 
 5. **CPU↔Bus boundary** — `comptime Bus: type` (monomorphized per concrete bus type) vs vtable (runtime swap). Touches every instruction call — easier to commit early than to refactor later.
 
-6. **Fidelity scope + gating mechanism** — which hardware revisions, regions, peripherals/accessories, boot ROMs, and analog characteristics this emulator faithfully reproduces, and how scope-dependent paths are gated (compile-time `comptime` vs runtime field). Per-system candidates in `references/<system>/fidelity-scope-candidates.md`. Entangled with #4 (save-state must encode the active revision) and #2 (revision gating may reuse the tagged-union pattern from mapper polymorphism).
+6. **Fidelity scope + gating mechanism** — which hardware revisions, regions, peripherals/accessories, boot ROMs, in-scope cartridge mappers, and analog characteristics this emulator faithfully reproduces, and how scope-dependent paths are gated (compile-time `comptime` vs runtime field). Concrete per-system candidates live in the consuming repo's `docs/adr/` (or `CONTEXT.md` for stable canon like hardware codenames). Entangled with #4 (save-state must encode the active revision) and #2 (revision gating may reuse the tagged-union pattern from mapper polymorphism).
 
 Note: "fidelity scope" (the ADR-level scope choice) is distinct from `QUIRK` (the inline tag for universal hardware quirks the cycle-accuracy tier dictates you reproduce regardless). See [comments.md](./comments.md) for the naming hygiene.
 
@@ -94,6 +95,3 @@ If `build.zig.zon`'s `minimum_zig_version` is not `0.16.x`, surface a one-line w
 | [testing.md](./testing.md) | Wiring test ROMs, determinism tests, save-state round-trip |
 | [build.md](./build.md) | Editing `build.zig` (artifact split, feature flags, test wiring) |
 | [setup.md](./setup.md) | First emudev invocation in a fresh repo |
-| `references/shared/citation-prefixes.md` | Choosing a citation form |
-| `references/shared/cycle-accuracy-tiers.md` | Comparing instruction / M-cycle / T-state tiers |
-| `references/<system>/` | System-specific references (codenames, test-ROM wiring, fidelity-scope candidates) |
