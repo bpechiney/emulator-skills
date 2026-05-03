@@ -79,11 +79,11 @@ Emudev defers loops and processes to sibling skills. It contributes domain conte
 - **`/tdd`** drives the red-green-refactor loop. Emudev provides *what to test against* (test ROMs, golden traces, determinism, save-state round-trip — see [testing.md](./testing.md)) and *how to write the implementation* (citations, dispatch, packed structs).
 - **`/grill-with-docs`** walks the seven load-bearing decisions above. Emudev does not write ADRs directly.
 - **`/to-issues`** slices implementation work into vertical tracer-bullet issues. Emudev does not parallel its slicing logic.
-- **`/diagnose`** runs the hardware-quirk debugging loop. Emulator dev is bug-hunt-heavy; `/diagnose` is the daily driver.
+- **`/emulator-diagnosis`** runs the hardware-quirk debugging loop. Emulator dev is bug-hunt-heavy; `/emulator-diagnosis` is the daily driver.
 - **`/improve-codebase-architecture`** reads ADRs produced via `/grill-with-docs`. No direct integration.
 - **`/triage`** suggested labels for emulator work: `cycle-accuracy`, `mapper-compat`, `test-rom-failing`, `hack-debt`, `cite-needed`. Configure in `docs/agents/triage-labels.md` per `/setup-matt-pocock-skills`.
 
-`/tdd`, `/diagnose`, and `/improve-codebase-architecture` carry one-line cross-references to `/emudev` so the agent picks up domain context when triggered by the sibling skill.
+`/tdd`, `/emulator-diagnosis`, and `/improve-codebase-architecture` carry one-line cross-references to `/emudev` so the agent picks up domain context when triggered by the sibling skill.
 
 ## Zig version
 
